@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transbio Graduate School - Partenaires Internationaux</title>
+  
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Custom Style -->
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      color: #333;
+      background-color: #f8f8f8;
+    }
+    
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #004080;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    #map {
+      height: 500px;
+      width: 100%;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      z-index: 1;
+    }
+    
+    .filter-container {
+      background-color: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .news-date {
+      font-size: 0.8rem;
+      color: #666;
+      font-weight: 500;
+    }
+    
+    .btn-primary {
+      background-color: #004080;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      transition: background-color 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      background-color: #00305f;
+    }
+    
+    footer {
+      background-color: #004080;
+      color: white;
+    }
+    
+    @media print {
+      .container {
+        width: 100%;
+        max-width: 100%;
+      }
+      
+      #map {
+        height: 400px;
+        page-break-inside: avoid;
+      }
+      
+      section {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="bg-blue-900 text-white">
+    <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold">Transbio Graduate School</h1>
+        <p class="text-sm text-blue-200">L'excellence dans la recherche et l'éducation</p>
+      </div>
+      <nav class="mt-4 md:mt-0">
+        <ul class="flex space-x-6">
+          <li><a href="#map-section" class="hover:text-blue-200 font-medium">Carte des partenaires</a></li>
+          <li><a href="#networks" class="hover:text-blue-200 font-medium">Réseaux</a></li>
+          <li><a href="#international" class="hover:text-blue-200 font-medium">International</a></li>
+          <li><a href="#studying-abroad" class="hover:text-blue-200 font-medium">Étudier à l'étranger</a></li>
+          <li><a href="#news" class="hover:text-blue-200 font-medium">Actualités</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <div class="bg-blue-800 text-white py-10">
+    <div class="container mx-auto px-4">
+      <h2 class="text-3xl font-bold mb-4">Partenaires Internationaux</h2>
+      <p class="text-xl mb-6">Découvrez notre réseau mondial de partenaires académiques et institutionnels</p>
+      <p class="text-blue-200 max-w-3xl">Transbio Graduate School s'engage à construire des partenariats solides avec des institutions du monde entier pour offrir des possibilités d'échange et de collaboration pour nos étudiants, chercheurs et enseignants.</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="flex-grow">
+    <div class="container mx-auto px-4 py-8">
+      
+      <!-- Map Section -->
+      <section id="map-section" class="mb-16">
+        <h2 class="section-title">Carte interactive des institutions partenaires</h2>
+        <p class="mb-4">Explorez les partenariats internationaux de la Graduate School Transbio à travers le monde. Utilisez les filtres ci-dessous pour affiner votre recherche.</p>
+        
+        <!-- Nouvelle disposition avec filtres à gauche -->
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Filtres à gauche -->
+          <div class="w-full md:w-1/4">
+            <div class="filter-container">
+              <h3 class="text-lg font-medium text-blue-800 mb-4">Filtres</h3>
+              
+              <div class="mb-4">
+                <label for="levelFilter" class="block text-sm font-medium text-gray-700 mb-1">Niveau du programme :</label>
+                <select id="levelFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Tous</option>
+                </select>
+              </div>
+              
+              <div class="mb-4">
+                <label for="relationFilter" class="block text-sm font-medium text-gray-700 mb-1">Type de relation :</label>
+                <select id="relationFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Toutes</option>
+                </select>
+              </div>
+              
+              <div class="mb-4">
+                <label for="agreementFilter" class="block text-sm font-medium text-gray-700 mb-1">Type d'accord :</label>
+                <select id="agreementFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Tous</option>
+                </select>
+              </div>
+              
+              <div class="text-sm text-gray-600 mt-6">
+                <p>La carte affiche tous nos partenariats actifs. Cliquez sur un marqueur pour voir plus de détails sur le partenariat.</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Carte à droite -->
+          <div class="w-full md:w-3/4">
+            <div id="map"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Networks Section -->
+      <section id="networks" class="mb-16">
+        <h2 class="section-title">Réseaux</h2>
+        <p class="mb-6">Des partenariats soigneusement sélectionnés et cultivés forment la base du partage des connaissances et de la coopération dans l'éducation et la formation, afin de fournir des services appropriés et de progresser dans la recherche et le développement.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-blue-800 mb-3">Collaborations académiques</h3>
+            <p class="text-gray-700 mb-4">Partenariats avec des universités de premier plan pour des échanges d'étudiants, de professeurs et de chercheurs.</p>
+            <span class="text-sm font-medium text-blue-600">Plus de 150 partenaires académiques</span>
+          </div>
+          
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-blue-800 mb-3">Partenariats industriels</h3>
+            <p class="text-gray-700 mb-4">Collaboration avec des entreprises et industries pour des projets de recherche appliquée et des stages.</p>
+            <span class="text-sm font-medium text-blue-600">Plus de 75 partenaires industriels</span>
+          </div>
+          
+          <div class="card bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-blue-800 mb-3">Réseaux de recherche</h3>
+            <p class="text-gray-700 mb-4">Participation à des consortiums de recherche internationaux dans divers domaines scientifiques.</p>
+            <span class="text-sm font-medium text-blue-600">25 réseaux actifs</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- International Section -->
+      <section id="international" class="mb-16">
+        <h2 class="section-title">International</h2>
+        <p class="mb-6">Transbio Graduate School évolue dans un environnement international, travaille au-delà des frontières et intensifie la coopération avec des partenaires étrangers dans toutes les disciplines, tant pour le personnel que pour les étudiants.</p>
+        
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+          <h3 class="text-xl font-semibold text-blue-800 mb-3">Notre vision internationale</h3>
+          <p class="text-gray-700 mb-4">Nous utilisons les synergies résultant de la collaboration avec des établissements d'enseignement et de recherche du monde entier. En même temps, Transbio Graduate School valorise sa position régionale en tant que hub dans notre monde globalement connecté.</p>
+          <p class="text-gray-700">Nous sommes convaincus que notre société a besoin de plus d'acteurs compétents et responsables, qui travaillent en réseau pour générer des connaissances et qui reconnaissent la diversité culturelle comme un avantage.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-blue-800 mb-3">Programmes internationaux</h3>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700">
+              <li>Programmes d'échange pour étudiants et chercheurs</li>
+              <li>Écoles d'été internationales</li>
+              <li>Programmes de double diplôme</li>
+              <li>Ateliers et séminaires internationaux</li>
+              <li>Projets de recherche collaboratifs</li>
+            </ul>
+          </div>
+          
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-blue-800 mb-3">Ressources</h3>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700">
+              <li>Bureau des relations internationales</li>
+              <li>Centre de compétences linguistiques</li>
+              <li>Services d'accueil des étudiants internationaux</li>
+              <li>Programmes de mentorat interculturel</li>
+              <li>Ateliers de préparation à la mobilité internationale</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Studying Abroad Section -->
+      <section id="studying-abroad" class="mb-16">
+        <h2 class="section-title">Étudier et travailler à l'étranger</h2>
+        <p class="mb-6">Transbio Graduate School encourage la mobilité des étudiants ainsi que la mobilité du personnel pour les enseignants, les collaborateurs scientifiques et les assistants, et pour le personnel technique et opérationnel pour des périodes limitées dans l'une de nos universités partenaires.</p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Pour les étudiants</h3>
+            <p class="text-gray-700 mb-4">Plusieurs possibilités s'offrent à vous pour étudier à l'étranger pendant votre parcours à Transbio Graduate School :</p>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700 mb-6">
+              <li>Semestre d'échange</li>
+              <li>Stages internationaux</li>
+              <li>Projets de recherche</li>
+              <li>Écoles d'été</li>
+            </ul>
+            <a href="#" class="btn-primary">En savoir plus</a>
+          </div>
+          
+          <div class="bg-white p-6 rounded-lg shadow-md">
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Pour les chercheurs et le personnel</h3>
+            <p class="text-gray-700 mb-4">Les opportunités de mobilité pour le personnel académique et administratif :</p>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700 mb-6">
+              <li>Séjours de recherche</li>
+              <li>Enseignement dans des universités partenaires</li>
+              <li>Participation à des conférences internationales</li>
+              <li>Formations professionnelles</li>
+            </ul>
+            <a href="#" class="btn-primary">En savoir plus</a>
+          </div>
+        </div>
+        
+        <div class="bg-blue-50 p-6 rounded-lg">
+          <h3 class="text-xl font-semibold text-blue-800 mb-4">Témoignages d'étudiants</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-4 rounded-lg shadow-sm">
+              <p class="italic text-gray-700 mb-2">"Mon semestre à l'Université d'Édimbourg a été une expérience transformatrice qui m'a permis d'élargir mes horizons académiques et personnels."</p>
+              <p class="font-medium">Marie L., étudiante en Master</p>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow-sm">
+              <p class="italic text-gray-700 mb-2">"Mon stage de recherche à Stockholm a été déterminant pour mon projet professionnel et m'a ouvert de nombreuses portes."</p>
+              <p class="font-medium">Thomas B., doctorant</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- News Section -->
+      <section id="news" class="mb-16">
+        <h2 class="section-title">Actualités et événements</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- News Column -->
+          <div>
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Dernières actualités</h3>
+            
+            <div class="space-y-6">
+              <div class="bg-white p-5 rounded-lg shadow-md">
+                <span class="news-date">15 Avril 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Nouveau partenariat avec l'Université de Helsinki</h4>
+                <p class="text-gray-700 mb-3">Transbio Graduate School est fière d'annoncer un nouveau partenariat stratégique avec l'Université de Helsinki pour des échanges d'étudiants et des projets de recherche conjoints.</p>
+                <a href="#" class="text-blue-600 font-medium hover:underline">Lire la suite</a>
+              </div>
+              
+              <div class="bg-white p-5 rounded-lg shadow-md">
+                <span class="news-date">28 Mars 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Succès du programme d'échange avec Edinburgh</h4>
+                <p class="text-gray-700 mb-3">Le programme d'échange avec l'Université d'Edinburgh a attiré un nombre record d'étudiants cette année, avec des retours très positifs des participants.</p>
+                <a href="#" class="text-blue-600 font-medium hover:underline">Lire la suite</a>
+              </div>
+              
+              <div class="bg-white p-5 rounded-lg shadow-md">
+                <span class="news-date">12 Mars 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Projet de recherche collaboratif avec Stockholm</h4>
+                <p class="text-gray-700 mb-3">Une équipe de chercheurs de Transbio a lancé un projet collaboratif avec l'Université de Stockholm sur l'étude des déterminants du choix alimentaire.</p>
+                <a href="#" class="text-blue-600 font-medium hover:underline">Lire la suite</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Events Column -->
+          <div>
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Événements à venir</h3>
+            
+            <div class="space-y-6">
+              <div class="bg-white p-5 rounded-lg shadow-md">
+                <span class="news-date">20 Mai 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Journée des partenaires internationaux</h4>
+                <p class="text-gray-700 mb-3">Une journée dédiée à la présentation des opportunités d'échange et de collaboration avec nos institutions partenaires.</p>
+                <p class="text-sm font-medium text-gray-600 mb-3">Campus de Besançon, Bâtiment A</p>
+                <a href="#" class="btn-primary">S'inscrire</a>
+              </div>
+              
+              <div class="bg-white p-5 rounded-lg shadow-md">
+                <span class="news-date">15 Juin 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Webinaire : Étudier à l'étranger</h4>
+                <p class="text-gray-700 mb-3">Présentation des programmes d'échange et témoignages d'étudiants ayant participé à des mobilités internationales.</p>
+                <p class="text-sm font-medium text-gray-600 mb-3">En ligne, 14h-16h</p>
+                <a href="#" class="btn-primary">S'inscrire</a>
+              </div>
+              
+              <div class="bg-white p-5 rounded-lg shadow-md">
+                <span class="news-date">10 Juillet 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">École d'été internationale</h4>
+                <p class="text-gray-700 mb-3">Une semaine intensive de cours et d'ateliers avec des intervenants internationaux sur les thématiques de la transition écologique.</p>
+                <p class="text-sm font-medium text-gray-600 mb-3">Campus de Dijon, 10-17 juillet</p>
+                <a href="#" class="btn-primary">S'inscrire</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-8">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-xl font-bold mb-4">Transbio Graduate School</h3>
+          <p class="text-blue-200 mb-4">Une formation d'excellence pour les futurs chercheurs et professionnels dans le domaine des sciences du vivant.</p>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Contact</h4>
+          <ul class="space-y-2 text-blue-200">
+            <li>Bureau des Relations Internationales</li>
+            <li>Campus de Besançon</li>
+            <li>Email: international@transbio.edu</li>
+            <li>Tél: +33 3 81 XX XX XX</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Liens rapides</h4>
+          <ul class="space-y-2">
+            <li><a href="#map-section" class="text-blue-200 hover:text-white">Carte des partenaires</a></li>
+            <li><a href="#networks" class="text-blue-200 hover:text-white">Réseaux</a></li>
+            <li><a href="#international" class="text-blue-200 hover:text-white">International</a></li>
+            <li><a href="#studying-abroad" class="text-blue-200 hover:text-white">Étudier à l'étranger</a></li>
+            <li><a href="#news" class="text-blue-200 hover:text-white">Actualités</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Suivez-nous</h4>
+          <div class="flex space-x-4">
+            <a href="#" class="text-blue-200 hover:text-white">Twitter</a>
+            <a href="#" class="text-blue-200 hover:text-white">LinkedIn</a>
+            <a href="#" class="text-blue-200 hover:text-white">Facebook</a>
+            <a href="#" class="text-blue-200 hover:text-white">Instagram</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-8 pt-6 border-t border-blue-700">
+        <p class="text-center text-blue-200">&copy; 2025 Transbio Graduate School. Tous droits réservés.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <script>
+    // Initialiser la carte
+    let map = L.map("map").setView([45, 3], 3);
+
+    // Charger le fond de carte depuis OpenStreetMap
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let markers = [];
+    let data = [];
+
+    // Fonction pour charger les données CSV (simulée ici)
+    function loadMapData() {
+      // En production, vous utiliseriez fetch() pour charger le fichier CSV
+      // Pour cette démo, nous allons créer des données d'exemple
+      
+      const csvData = `Related Program level,Related program name,Related Institution,Partner Institution,Partner country,Partner Country,Partner program,Relationship type,International agreeemnt,full_address,Latitude,Longitude
+Master,Physiological and Psychological FOOd choice Determinants (P²FOOD),Institu Agro Dijon (IAD),University of Edinburgh,United Kingdom,Edinburgh,Food and Consumer Behavior,Teaching,Erasmus+,University of Edinburgh United Kingdom,55.944076,-3.188374
+PhD,Ecology-Evolution-Environment,University of Franche-Comté,Stockholm University,Sweden,Stockholm,Department of Ecology Environment and Plant Sciences,Research,Erasmus+,Stockholm University Sweden,59.363317,18.058345
+Master,Food innovation and product design,Institu Agro Dijon (IAD),Technical University of Munich,Germany,Munich,School of Life Sciences,Teaching,Erasmus+,Technical University of Munich Germany,48.137187,11.576293
+PhD,Earth Sciences,University of Franche-Comté,University of Barcelona,Spain,Barcelona,Department of Earth and Ocean Dynamics,Research,MOU,University of Barcelona Spain,41.385063,2.173404
+Master,Microbiologie-Environnement-Santé,University of Franche-Comté,University of Helsinki,Finland,Helsinki,Faculty of Biological and Environmental Sciences,Teaching,Erasmus+,University of Helsinki Finland,60.169856,24.938379
+PhD,Marine Biology,INES Oceanographic Institute,University of Lisbon,Portugal,Lisbon,Centre of Marine Sciences,Research,Joint PhD,University of Lisbon Portugal,38.722252,-9.139337
+Master,Biologie Intégrative,University of Franche-Comté,University of Vienna,Austria,Vienna,Department of Evolutionary Biology,Teaching,Erasmus+,University of Vienna Austria,48.208176,16.373819
+PhD,Environmental Sciences,Institu Agro Dijon (IAD),ETH Zurich,Switzerland,Zurich,Department of Environmental Systems Science,Research,MOU,ETH Zurich Switzerland,47.376887,8.548019
+Bachelor,Biotechnology,University of Franche-Comté,University of Warsaw,Poland,Warsaw,Faculty of Biology,Teaching,Erasmus+,University of Warsaw Poland,52.232222,21.006741
+Master,Neurosciences,University of Burgundy,Karolinska Institute,Sweden,Stockholm,Department of Neuroscience,Research,Erasmus+,Karolinska Institute Stockholm Sweden,59.345735,18.031749
+PhD,Plant Biology,Institu Agro Dijon (IAD),University of Copenhagen,Denmark,Copenhagen,Department of Plant and Environmental Sciences,Research,Joint PhD,University of Copenhagen Denmark,55.680196,12.572966
+Master,Environmental Chemistry,University of Franche-Comté,University of Amsterdam,Netherlands,Amsterdam,Institute for Biodiversity and Ecosystem Dynamics,Teaching,Erasmus+,University of Amsterdam Netherlands,52.370216,4.895168
+Bachelor,Bioengineering,ESIREM,KU Leuven,Belgium,Leuven,Faculty of Bioscience Engineering,Teaching,Erasmus+,KU Leuven Belgium,50.879844,4.700518
+PhD,Medical Physics,University of Burgundy,University of Milan,Italy,Milan,Department of Physics,Research,Joint PhD,University of Milan Italy,45.464664,9.188540
+Master,Data Science for Life Sciences,University of Franche-Comté,Tallinn University of Technology,Estonia,Tallinn,School of Information Technologies,Teaching,Erasmus+,Tallinn University of Technology Estonia,59.395519,24.671370
+PhD,Food Science and Technology,Institu Agro Dijon (IAD),University College Dublin,Ireland,Dublin,School of Agriculture and Food Science,Research,MOU,University College Dublin Ireland,53.306374,-6.220988
+Master,Biodiversity and Ecosystem Management,University of Burgundy,University of Belgrade,Serbia,Belgrade,Faculty of Biology,Teaching,Erasmus+,University of Belgrade Serbia,44.787197,20.448922
+PhD,Bioinformatics,University of Franche-Comté,University of Ljubljana,Slovenia,Ljubljana,Biotechnical Faculty,Research,Joint PhD,University of Ljubljana Slovenia,46.056946,14.505751
+Bachelor,Agroecology,Institu Agro Dijon (IAD),Agricultural University of Athens,Greece,Athens,Department of Crop Science,Teaching,Erasmus+,Agricultural University of Athens Greece,37.983810,23.727539
+PhD,Immunology,University of Burgundy,University of Oxford,United Kingdom,Oxford,Sir William Dunn School of Pathology,Research,MOU,University of Oxford United Kingdom,51.754816,-1.254367
+Master,Environmental Engineering,ESIREM,Technical University of Berlin,Germany,Berlin,Institute of Environmental Technology,Teaching,Erasmus+,Technical University of Berlin Germany,52.512127,13.326988`;
+
+      // Parse CSV data
+      const parsedData = Papa.parse(csvData, { header: true }).data;
+      console.log("Données chargées : ", parsedData);
+      
+      // Process the data
+      if (parsedData.length > 0) {
+        data = parsedData;
+        populateFilters(data);
+        updateMap(data);
+      } else {
+        console.error("Données vides ou mal formatées.");
+      }
+    }
+
+    // Fonction pour peupler les filtres
+    function populateFilters(data) {
+      const levels = new Set();
+      const relations = new Set();
+      const agreements = new Set();
+
+      // Remplir les sets pour chaque filtre
+      data.forEach(d => {
+        if (d['Related Program level']) levels.add(d['Related Program level']);
+        if (d['Relationship type']) relations.add(d['Relationship type']);
+        if (d['International agreeemnt']) agreements.add(d['International agreeemnt']);
+      });
+
+      console.log("Filtres disponibles - Niveau : ", levels);
+      console.log("Filtres disponibles - Relation : ", relations);
+      console.log("Filtres disponibles - Accord international : ", agreements);
+
+      fillSelect("levelFilter", levels);
+      fillSelect("relationFilter", relations);
+      fillSelect("agreementFilter", agreements);
+    }
+
+    // Fonction pour remplir les options dans un select
+    function fillSelect(id, values) {
+      const select = document.getElementById(id);
+      values.forEach(val => {
+        if (val) {
+          const option = document.createElement("option");
+          option.value = val;
+          option.text = val;
+          select.appendChild(option);
+        }
+      });
+    }
+
+    // Mise à jour de la carte selon les filtres
+    function updateMap(data) {
+      markers.forEach(m => map.removeLayer(m));  // Retirer les anciens marqueurs
+      markers = [];
+
+      const level = document.getElementById("levelFilter").value;
+      const relation = document.getElementById("relationFilter").value;
+      const agreement = document.getElementById("agreementFilter").value;
+
+      console.log("Filtres appliqués - Niveau : ", level);
+      console.log("Filtres appliqués - Relation : ", relation);
+      console.log("Filtres appliqués - Accord international : ", agreement);
+
+      const filtered = data.filter(d => {
+        return (!level || d['Related Program level'] === level) &&
+               (!relation || d['Relationship type'] === relation) &&
+               (!agreement || d['International agreeemnt'] === agreement) &&
+               d.Latitude && d.Longitude;  // Vérifier qu'il y a des coordonnées
+      });
+
+      console.log("Données filtrées : ", filtered);
+
+      filtered.forEach(d => {
+        const lat = parseFloat(d.Latitude);
+        const lng = parseFloat(d.Longitude);
+        if (!isNaN(lat) && !isNaN(lng)) {  // Vérifier que les coordonnées sont valides
+          const marker = L.marker([lat, lng]).addTo(map);
+          marker.bindPopup(`
+            <b>${d['Related program name']}</b><br>
+            <b>Institution:</b> ${d['Related Institution']}<br>
+            <b>Partenaire:</b> ${d['Partner Institution']}<br>
+            <b>Pays:</b> ${d['Partner country']}<br>
+            <b>Programme partenaire:</b> ${d['Partner program']}<br>
+            <b>Type de relation:</b> ${d['Relationship type']}<br>
+            <b>Accord:</b> ${d['International agreeemnt']}
+          `);
+          markers.push(marker);
+        } else {
+          console.warn("Coordonnées invalides pour le programme : ", d);
+        }
+      });
+    }
+
+    // Écouter les changements des filtres pour mettre à jour la carte
+    document.getElementById("levelFilter").addEventListener("change", () => updateMap(data));
+    document.getElementById("relationFilter").addEventListener("change", () => updateMap(data));
+    document.getElementById("agreementFilter").addEventListener("change", () => updateMap(data));
+
+    // Charger les données au chargement de la page
+    window.addEventListener('DOMContentLoaded', loadMapData);
+  </script>
+</body>
+</html>
