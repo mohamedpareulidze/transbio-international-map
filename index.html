@@ -5,18 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Transbio Graduate School - Partenaires Internationaux</title>
   
-  <!-- External Libraries -->
+  <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   
-  <!-- Custom Styles -->
+  <!-- Custom Style -->
   <style>
     body {
       font-family: 'Roboto', sans-serif;
       color: #333;
       background-color: #f8f8f8;
     }
+    
     .section-title {
       font-size: 1.8rem;
       font-weight: 600;
@@ -25,30 +30,37 @@
       padding-bottom: 0.5rem;
       border-bottom: 2px solid rgba(0, 0, 0, 0.1);
     }
+    
     .card {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+    
     .card:hover {
       transform: translateY(-5px);
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     }
+    
     #map {
       height: 500px;
       width: 100%;
       border: 2px solid #ccc;
       border-radius: 8px;
+      z-index: 1;
     }
+    
     .filter-container {
       background-color: white;
       padding: 15px;
       border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
+    
     .news-date {
       font-size: 0.8rem;
       color: #666;
       font-weight: 500;
     }
+    
     .btn-primary {
       background-color: #004080;
       color: white;
@@ -58,22 +70,27 @@
       display: inline-block;
       transition: background-color 0.3s ease;
     }
+    
     .btn-primary:hover {
       background-color: #00305f;
     }
+    
     footer {
       background-color: #004080;
       color: white;
     }
+    
     @media print {
       .container {
         width: 100%;
         max-width: 100%;
       }
+      
       #map {
         height: 400px;
         page-break-inside: avoid;
       }
+      
       section {
         page-break-inside: avoid;
       }
@@ -112,43 +129,56 @@
   <!-- Main Content -->
   <main class="flex-grow">
     <div class="container mx-auto px-4 py-8">
+      
       <!-- Map Section -->
       <section id="map-section" class="mb-16">
         <h2 class="section-title">Carte interactive des institutions partenaires</h2>
         <p class="mb-4">Explorez les partenariats internationaux de la Graduate School Transbio à travers le monde. Utilisez les filtres ci-dessous pour affiner votre recherche.</p>
+        
+        <!-- Nouvelle disposition avec filtres à gauche -->
         <div class="flex flex-col md:flex-row gap-6">
-          <!-- Filters -->
+          <!-- Filtres à gauche -->
           <div class="w-full md:w-1/4">
             <div class="filter-container">
               <h3 class="text-lg font-medium text-blue-800 mb-4">Filtres</h3>
+              
               <div class="mb-4">
                 <label for="typeFilter" class="block text-sm font-medium text-gray-700 mb-1">Type :</label>
                 <select id="typeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="" selected>Tous</option>
+                  <option value="">Tous</option>
+                  <option value="Master">Master</option>
+                  <option value="Laboratory">Laboratoire</option>
                 </select>
               </div>
+              
               <div class="mb-4" id="programLabFilterContainer" style="display: none;">
-                <label for="programLabFilter" class="block text-sm font-medium text-gray-700 mb-1">Programme/Laboratoire :</label>
+                <label for="programLabFilter" class="block text-sm font-medium text-gray-700 mb-1">Programme/Laboratoire spécifique :</label>
                 <select id="programLabFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="" selected>Tous</option>
+                  <option value="">Tous</option>
                 </select>
               </div>
+              
               <div class="mb-4">
                 <label for="agreementFilter" class="block text-sm font-medium text-gray-700 mb-1">Type d'accord :</label>
                 <select id="agreementFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="" selected>Tous</option>
+                  <option value="">Tous</option>
                 </select>
               </div>
+              
               <div class="mb-4">
                 <label for="countryFilter" class="block text-sm font-medium text-gray-700 mb-1">Pays partenaire :</label>
                 <select id="countryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="" selected>Tous</option>
+                  <option value="">Tous</option>
                 </select>
               </div>
-              <p class="text-sm text-gray-600 mt-6">La carte affiche tous nos partenariats actifs. Cliquez sur un marqueur pour plus de détails.</p>
+              
+              <div class="text-sm text-gray-600 mt-6">
+                <p>La carte affiche tous nos partenariats actifs. Cliquez sur un marqueur pour voir plus de détails sur le partenariat.</p>
+              </div>
             </div>
           </div>
-          <!-- Map -->
+          
+          <!-- Carte à droite -->
           <div class="w-full md:w-3/4">
             <div id="map"></div>
           </div>
@@ -158,22 +188,25 @@
       <!-- Networks Section -->
       <section id="networks" class="mb-16">
         <h2 class="section-title">Réseaux</h2>
-        <p class="mb-6">Des partenariats soigneusement sélectionnés soutiennent le partage des connaissances et la coopération dans l'éducation et la recherche.</p>
+        <p class="mb-6">Des partenariats soigneusement sélectionnés et cultivés forment la base du partage des connaissances et de la coopération dans l'éducation et la formation, afin de fournir des services appropriés et de progresser dans la recherche et le développement.</p>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div class="card bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-xl font-semibold text-blue-800 mb-3">Collaborations académiques</h3>
-            <p class="text-gray-700 mb-4">Échanges avec des universités de premier plan.</p>
-            <span class="text-sm font-medium text-blue-600">150+ partenaires</span>
+            <p class="text-gray-700 mb-4">Partenariats avec des universités de premier plan pour des échanges d'étudiants, de professeurs et de chercheurs.</p>
+            <span class="text-sm font-medium text-blue-600">Plus de 150 partenaires académiques</span>
           </div>
+          
           <div class="card bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-xl font-semibold text-blue-800 mb-3">Partenariats industriels</h3>
-            <p class="text-gray-700 mb-4">Projets avec des entreprises pour la recherche appliquée.</p>
-            <span class="text-sm font-medium text-blue-600">75+ partenaires</span>
+            <p class="text-gray-700 mb-4">Collaboration avec des entreprises et industries pour des projets de recherche appliquée et des stages.</p>
+            <span class="text-sm font-medium text-blue-600">Plus de 75 partenaires industriels</span>
           </div>
+          
           <div class="card bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-xl font-semibold text-blue-800 mb-3">Réseaux de recherche</h3>
-            <p class="text-gray-700 mb-4">Participation à des consortiums internationaux.</p>
-            <span class="text-sm font-medium text-blue-600">25 réseaux</span>
+            <p class="text-gray-700 mb-4">Participation à des consortiums de recherche internationaux dans divers domaines scientifiques.</p>
+            <span class="text-sm font-medium text-blue-600">25 réseaux actifs</span>
           </div>
         </div>
       </section>
@@ -181,28 +214,34 @@
       <!-- International Section -->
       <section id="international" class="mb-16">
         <h2 class="section-title">International</h2>
-        <p class="mb-6">Transbio opère globalement, renforçant la coopération avec des partenaires étrangers.</p>
+        <p class="mb-6">Transbio Graduate School évolue dans un environnement international, travaille au-delà des frontières et intensifie la coopération avec des partenaires étrangers dans toutes les disciplines, tant pour le personnel que pour les étudiants.</p>
+        
         <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h3 class="text-xl font-semibold text-blue-800 mb-3">Notre vision</h3>
-          <p class="text-gray-700">Nous collaborons mondialement tout en valorisant notre rôle régional.</p>
+          <h3 class="text-xl font-semibold text-blue-800 mb-3">Notre vision internationale</h3>
+          <p class="text-gray-700 mb-4">Nous utilisons les synergies résultant de la collaboration avec des établissements d'enseignement et de recherche du monde entier. En même temps, Transbio Graduate School valorise sa position régionale en tant que hub dans notre monde globalement connecté.</p>
+          <p class="text-gray-700">Nous sommes convaincus que notre société a besoin de plus d'acteurs compétents et responsables, qui travaillent en réseau pour générer des connaissances et qui reconnaissent la diversité culturelle comme un avantage.</p>
         </div>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold text-blue-800 mb-3">Programmes</h3>
+            <h3 class="text-xl font-semibold text-blue-800 mb-3">Programmes internationaux</h3>
             <ul class="list-disc pl-5 space-y-2 text-gray-700">
-              <li>Échanges étudiants</li>
-              <li>Écoles d'été</li>
-              <li>Double diplômes</li>
-              <li>Ateliers internationaux</li>
+              <li>Programmes d'échange pour étudiants et chercheurs</li>
+              <li>Écoles d'été internationales</li>
+              <li>Programmes de double diplôme</li>
+              <li>Ateliers et séminaires internationaux</li>
+              <li>Projets de recherche collaboratifs</li>
             </ul>
           </div>
+          
           <div class="bg-white p-6 rounded-lg shadow-md">
             <h3 class="text-xl font-semibold text-blue-800 mb-3">Ressources</h3>
             <ul class="list-disc pl-5 space-y-2 text-gray-700">
-              <li>Bureau international</li>
-              <li>Cours de langues</li>
-              <li>Accueil étudiants</li>
-              <li>Mentorat interculturel</li>
+              <li>Bureau des relations internationales</li>
+              <li>Centre de compétences linguistiques</li>
+              <li>Services d'accueil des étudiants internationaux</li>
+              <li>Programmes de mentorat interculturel</li>
+              <li>Ateliers de préparation à la mobilité internationale</li>
             </ul>
           </div>
         </div>
@@ -210,38 +249,45 @@
 
       <!-- Studying Abroad Section -->
       <section id="studying-abroad" class="mb-16">
-        <h2 class="section-title">Mobilité internationale</h2>
-        <p class="mb-6">Transbio favorise la mobilité des étudiants et du personnel vers nos partenaires.</p>
+        <h2 class="section-title">Étudier et travailler à l'étranger</h2>
+        <p class="mb-6">Transbio Graduate School encourage la mobilité des étudiants ainsi que la mobilité du personnel pour les enseignants, les collaborateurs scientifiques et les assistants, et pour le personnel technique et opérationnel pour des périodes limitées dans l'une de nos universités partenaires.</p>
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold text-blue-800 mb-4">Étudiants</h3>
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Pour les étudiants</h3>
+            <p class="text-gray-700 mb-4">Plusieurs possibilités s'offrent à vous pour étudier à l'étranger pendant votre parcours à Transbio Graduate School :</p>
             <ul class="list-disc pl-5 space-y-2 text-gray-700 mb-6">
               <li>Semestre d'échange</li>
-              <li>Stages</li>
+              <li>Stages internationaux</li>
               <li>Projets de recherche</li>
+              <li>Écoles d'été</li>
             </ul>
             <a href="#" class="btn-primary">En savoir plus</a>
           </div>
+          
           <div class="bg-white p-6 rounded-lg shadow-md">
-            <h3 class="text-xl font-semibold text-blue-800 mb-4">Personnel</h3>
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Pour les chercheurs et le personnel</h3>
+            <p class="text-gray-700 mb-4">Les opportunités de mobilité pour le personnel académique et administratif :</p>
             <ul class="list-disc pl-5 space-y-2 text-gray-700 mb-6">
               <li>Séjours de recherche</li>
-              <li>Enseignement</li>
-              <li>Conférences</li>
+              <li>Enseignement dans des universités partenaires</li>
+              <li>Participation à des conférences internationales</li>
+              <li>Formations professionnelles</li>
             </ul>
             <a href="#" class="btn-primary">En savoir plus</a>
           </div>
         </div>
+        
         <div class="bg-blue-50 p-6 rounded-lg">
-          <h3 class="text-xl font-semibold text-blue-800 mb-4">Témoignages</h3>
+          <h3 class="text-xl font-semibold text-blue-800 mb-4">Témoignages d'étudiants</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="bg-white p-4 rounded-lg shadow-sm">
-              <p class="italic text-gray-700 mb-2">"Édimbourg a transformé ma vision."</p>
-              <p class="font-medium">Marie L.</p>
+              <p class="italic text-gray-700 mb-2">"Mon semestre à l'Université d'Édimbourg a été une expérience transformatrice qui m'a permis d'élargir mes horizons académiques et personnels."</p>
+              <p class="font-medium">Marie L., étudiante en Master</p>
             </div>
             <div class="bg-white p-4 rounded-lg shadow-sm">
-              <p class="italic text-gray-700 mb-2">"Stockholm a boosté ma carrière."</p>
-              <p class="font-medium">Thomas B.</p>
+              <p class="italic text-gray-700 mb-2">"Mon stage de recherche à Stockholm a été déterminant pour mon projet professionnel et m'a ouvert de nombreuses portes."</p>
+              <p class="font-medium">Thomas B., doctorant</p>
             </div>
           </div>
         </div>
@@ -249,38 +295,63 @@
 
       <!-- News Section -->
       <section id="news" class="mb-16">
-        <h2 class="section-title">Actualités</h2>
+        <h2 class="section-title">Actualités et événements</h2>
+        
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- News Column -->
           <div>
-            <h3 class="text-xl font-semibold text-blue-800 mb-4">Nouvelles</h3>
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Dernières actualités</h3>
+            
             <div class="space-y-6">
               <div class="bg-white p-5 rounded-lg shadow-md">
-                <span class="news-date">15/04/2025</span>
-                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Partenariat avec Helsinki</h4>
-                <p class="text-gray-700 mb-3">Nouveau partenariat pour des échanges et recherches.</p>
-                <a href="#" class="text-blue-600 hover:underline">Lire</a>
+                <span class="news-date">15 Avril 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Nouveau partenariat avec l'Université de Helsinki</h4>
+                <p class="text-gray-700 mb-3">Transbio Graduate School est fière d'annoncer un nouveau partenariat stratégique avec l'Université de Helsinki pour des échanges d'étudiants et des projets de recherche conjoints.</p>
+                <a href="#" class="text-blue-600 font-medium hover:underline">Lire la suite</a>
               </div>
+              
               <div class="bg-white p-5 rounded-lg shadow-md">
-                <span class="news-date">28/03/2025</span>
-                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Succès à Edinburgh</h4>
-                <p class="text-gray-700 mb-3">Record d'étudiants dans le programme d'échange.</p>
-                <a href="#" class="text-blue-600 hover:underline">Lire</a>
+                <span class="news-date">28 Mars 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Succès du programme d'échange avec Edinburgh</h4>
+                <p class="text-gray-700 mb-3">Le programme d'échange avec l'Université d'Edinburgh a attiré un nombre record d'étudiants cette année, avec des retours très positifs des participants.</p>
+                <a href="#" class="text-blue-600 font-medium hover:underline">Lire la suite</a>
+              </div>
+              
+              <div class="bg-white p-5 rounded-lg shadow-md">
+                <span class="news-date">12 Mars 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Projet de recherche collaboratif avec Stockholm</h4>
+                <p class="text-gray-700 mb-3">Une équipe de chercheurs de Transbio a lancé un projet collaboratif avec l'Université de Stockholm sur l'étude des déterminants du choix alimentaire.</p>
+                <a href="#" class="text-blue-600 font-medium hover:underline">Lire la suite</a>
               </div>
             </div>
           </div>
+          
+          <!-- Events Column -->
           <div>
-            <h3 class="text-xl font-semibold text-blue-800 mb-4">Événements</h3>
+            <h3 class="text-xl font-semibold text-blue-800 mb-4">Événements à venir</h3>
+            
             <div class="space-y-6">
               <div class="bg-white p-5 rounded-lg shadow-md">
-                <span class="news-date">20/05/2025</span>
-                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Journée partenaires</h4>
-                <p class="text-gray-700 mb-3">Présentation des opportunités. Campus Besançon.</p>
+                <span class="news-date">20 Mai 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Journée des partenaires internationaux</h4>
+                <p class="text-gray-700 mb-3">Une journée dédiée à la présentation des opportunités d'échange et de collaboration avec nos institutions partenaires.</p>
+                <p class="text-sm font-medium text-gray-600 mb-3">Campus de Besançon, Bâtiment A</p>
                 <a href="#" class="btn-primary">S'inscrire</a>
               </div>
+              
               <div class="bg-white p-5 rounded-lg shadow-md">
-                <span class="news-date">15/06/2025</span>
-                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Webinaire mobilité</h4>
-                <p class="text-gray-700 mb-3">14h-16h en ligne.</p>
+                <span class="news-date">15 Juin 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">Webinaire : Étudier à l'étranger</h4>
+                <p class="text-gray-700 mb-3">Présentation des programmes d'échange et témoignages d'étudiants ayant participé à des mobilités internationales.</p>
+                <p class="text-sm font-medium text-gray-600 mb-3">En ligne, 14h-16h</p>
+                <a href="#" class="btn-primary">S'inscrire</a>
+              </div>
+              
+              <div class="bg-white p-5 rounded-lg shadow-md">
+                <span class="news-date">10 Juillet 2025</span>
+                <h4 class="text-lg font-medium text-blue-900 mt-1 mb-2">École d'été internationale</h4>
+                <p class="text-gray-700 mb-3">Une semaine intensive de cours et d'ateliers avec des intervenants internationaux sur les thématiques de la transition écologique.</p>
+                <p class="text-sm font-medium text-gray-600 mb-3">Campus de Dijon, 10-17 juillet</p>
                 <a href="#" class="btn-primary">S'inscrire</a>
               </div>
             </div>
@@ -296,27 +367,30 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <h3 class="text-xl font-bold mb-4">Transbio Graduate School</h3>
-          <p class="text-blue-200 mb-4">Excellence en sciences du vivant.</p>
+          <p class="text-blue-200 mb-4">Une formation d'excellence pour les futurs chercheurs et professionnels dans le domaine des sciences du vivant.</p>
         </div>
+        
         <div>
           <h4 class="font-bold mb-4">Contact</h4>
           <ul class="space-y-2 text-blue-200">
-            <li>Bureau international</li>
-            <li>Campus Besançon</li>
-            <li><a href="mailto:international@transbio.edu">international@transbio.edu</a></li>
+            <li>Bureau des Relations Internationales</li>
+            <li>Campus de Besançon</li>
+            <li>Email: <a href="mailto:international@transbio.edu">international@transbio.edu</a></li>
             <li>Tél: +33 3 81 XX XX XX</li>
           </ul>
         </div>
+        
         <div>
-          <h4 class="font-bold mb-4">Liens</h4>
+          <h4 class="font-bold mb-4">Liens rapides</h4>
           <ul class="space-y-2">
-            <li><a href="#map-section" class="text-blue-200 hover:text-white">Carte</a></li>
+            <li><a href="#map-section" class="text-blue-200 hover:text-white">Carte des partenaires</a></li>
             <li><a href="#networks" class="text-blue-200 hover:text-white">Réseaux</a></li>
             <li><a href="#international" class="text-blue-200 hover:text-white">International</a></li>
-            <li><a href="#studying-abroad" class="text-blue-200 hover:text-white">Mobilité</a></li>
+            <li><a href="#studying-abroad" class="text-blue-200 hover:text-white">Étudier à l'étranger</a></li>
             <li><a href="#news" class="text-blue-200 hover:text-white">Actualités</a></li>
           </ul>
         </div>
+        
         <div>
           <h4 class="font-bold mb-4">Suivez-nous</h4>
           <div class="flex space-x-4">
@@ -327,6 +401,7 @@
           </div>
         </div>
       </div>
+      
       <div class="mt-8 pt-6 border-t border-blue-700">
         <p class="text-center text-blue-200">© 2025 Transbio Graduate School. Tous droits réservés.</p>
       </div>
@@ -338,10 +413,12 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
   <script>
-    // Initialize map
-    const map = L.map('map').setView([45, 3], 3);
+    // Initializing the map
+    let map = L.map("map").setView([45, 3], 3);
+
+    // Adding CartoDB Voyager tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '© OpenStreetMap contributors © CARTO',
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20
     }).addTo(map);
@@ -349,7 +426,7 @@
     let markers = [];
     let data = [];
 
-    // City coordinates
+    // Hardcoding coordinates for partner cities
     const cityCoordinates = {
       "Stuttgart": [48.7758, 9.1829],
       "Gembloux": [50.5612, 4.6981],
@@ -381,118 +458,136 @@
       "Rouen": [49.4432, 1.0999]
     };
 
-    // Load CSV data
-    async function loadData() {
-      try {
-        const masterCsv = await (await fetch("Relations Internationales des Masters - Données.csv")).text();
-        const labCsv = await (await fetch("International_Relations_Transbio.csv")).text();
+    // Function to load and parse CSV data
+    function loadMapData() {
+      // Load Master's data
+      const masterCsv = loadFileData("Relations Internationales des Masters - Données CSV.csv");
+      const labCsv = loadFileData("International_Relations_Transbio.csv");
 
-        Papa.parse(masterCsv, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (masterResults) => {
-            const masterData = masterResults.data.map(row => ({
-              Type: "Master",
-              Name: row["Related Program Name"] || "",
-              RelatedInstitution: row["Related Institution"] || "",
-              PartnerInstitution: row["Partner Institution"] || "",
-              PartnerCountry: row["Partner Country"] || "",
-              PartnerCity: row["Partner City"] || "",
-              PartnerProgram: row["Partner Program"] || "",
-              Agreement: row["International Agreement"] || "",
-              Source: row["Source"] || "",
-              Latitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][0] : 0,
-              Longitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][1] : 0
-            })).filter(row => row.Latitude && row.Longitude);
+      // Parse Master's CSV
+      Papa.parse(masterCsv, {
+        header: true,
+        skipEmptyLines: true,
+        transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
+        transform: (value, header) => value.trim().replace(/^"|"$/g, ''),
+        complete: function(masterResults) {
+          const masterData = masterResults.data.map(row => ({
+            Type: "Master",
+            Name: row["Related Program Name"] || "",
+            RelatedInstitution: row["Related Institution"] || "",
+            PartnerInstitution: row["Partner Institution"] || "",
+            PartnerCountry: row["Partner Country"] || "",
+            PartnerCity: row["Partner City"] || "",
+            PartnerProgram: row["Partner Program"] || "",
+            Agreement: row["International Agreement"] || "",
+            Source: row["Source"] || "",
+            Latitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][0] : 0,
+            Longitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][1] : 0
+          })).filter(row => row.Latitude !== 0 && row.Longitude !== 0);
 
-            Papa.parse(labCsv, {
-              header: true,
-              skipEmptyLines: true,
-              complete: (labResults) => {
-                const labData = labResults.data.map(row => ({
-                  Type: "Laboratory",
-                  Name: row["Laboratory"] || "",
-                  RelatedInstitution: row["Related Institution"] || "",
-                  PartnerInstitution: row["Partner Institution"] || "",
-                  PartnerCountry: row["Partner Country"] || "",
-                  PartnerCity: row["Partner City"] || "",
-                  PartnerProgram: row["Partner Program"] || "",
-                  Agreement: "",
-                  Source: "",
-                  Latitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][0] : 0,
-                  Longitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][1] : 0
-                })).filter(row => row.Latitude && row.Longitude);
+          // Parse Laboratory CSV
+          Papa.parse(labCsv, {
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
+            transform: (value, header) => value.trim().replace(/^"|"$/g, ''),
+            complete: function(labResults) {
+              const labData = labResults.data.map(row => ({
+                Type: "Laboratory",
+                Name: row["Laboratory"] || "",
+                RelatedInstitution: row["Related Institution"] || "",
+                PartnerInstitution: row["Partner Institution"] || "",
+                PartnerCountry: row["Partner Country"] || "",
+                PartnerCity: row["Partner City"] || "",
+                PartnerProgram: row["Partner Program"] || "",
+                Agreement: "", // No agreement field in lab CSV
+                Source: "", // No source field in lab CSV
+                Latitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][0] : 0,
+                Longitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][1] : 0
+              })).filter(row => row.Latitude !== 0 && row.Longitude !== 0);
 
-                data = [...masterData, ...labData];
-                console.log("Data loaded:", data);
-                populateFilters();
-                updateMap();
-              },
-              error: (err) => console.error("Lab CSV error:", err)
-            });
-          },
-          error: (err) => console.error("Master CSV error:", err)
-        });
-      } catch (err) {
-        console.error("Fetch error:", err);
-      }
+              // Combine data
+              data = [...masterData, ...labData];
+              console.log("Données chargées :", data);
+              populateFilters(data);
+              updateMap(data);
+            },
+            error: function(err) {
+              console.error("Erreur lors du parsing du CSV laboratoire :", err);
+            }
+          });
+        },
+        error: function(err) {
+          console.error("Erreur lors du parsing du CSV master :", err);
+        }
+      });
     }
 
-    // Populate filters
-    function populateFilters() {
-      const types = new Set(["", "Master", "Laboratory"]);
-      const agreements = new Set([""]);
-      const countries = new Set([""]);
+    // Function to populate filter options
+    function populateFilters(data) {
+      const types = new Set(["Master", "Laboratory"]);
+      const agreements = new Set();
+      const countries = new Set();
       const namesByType = { Master: new Set(), Laboratory: new Set() };
 
-      data.forEach(item => {
-        types.add(item.Type);
-        if (item.Name) namesByType[item.Type].add(item.Name);
-        if (item.Agreement) agreements.add(item.Agreement);
-        if (item.PartnerCountry) countries.add(item.PartnerCountry);
+      data.forEach(d => {
+        if (d.Type) {
+          if (d.Name) {
+            namesByType[d.Type].add(d.Name);
+          }
+        }
+        if (d.Agreement) agreements.add(d.Agreement);
+        if (d.PartnerCountry) countries.add(d.PartnerCountry);
       });
 
-      fillSelect("typeFilter", types, "Tous");
-      fillSelect("agreementFilter", agreements, "Tous");
-      fillSelect("countryFilter", countries, "Tous");
+      console.log("Filtres disponibles - Type :", types);
+      console.log("Filtres disponibles - Accord :", agreements);
+      console.log("Filtres disponibles - Pays :", countries);
 
+      fillSelect("typeFilter", types);
+      fillSelect("agreementFilter", agreements);
+      fillSelect("countryFilter", countries);
+
+      // Handling program/lab filter visibility and population
       const typeFilter = document.getElementById("typeFilter");
+      const programLabFilterContainer = document.getElementById("programLabFilterContainer");
       const programLabFilter = document.getElementById("programLabFilter");
-      const programLabContainer = document.getElementById("programLabFilterContainer");
 
       typeFilter.addEventListener("change", () => {
-        const type = typeFilter.value;
-        programLabFilter.innerHTML = '<option value="" selected>Tous</option>';
-        programLabContainer.style.display = type ? "block" : "none";
-        if (type && namesByType[type]) {
-          Array.from(namesByType[type]).sort().forEach(name => {
+        const selectedType = typeFilter.value;
+        programLabFilter.innerHTML = '<option value="">Tous</option>';
+        
+        if (selectedType && namesByType[selectedType]) {
+          programLabFilterContainer.style.display = 'block';
+          Array.from(namesByType[selectedType]).sort().forEach(name => {
             const option = document.createElement("option");
             option.value = name;
             option.text = name;
             programLabFilter.appendChild(option);
           });
+        } else {
+          programLabFilterContainer.style.display = 'none';
         }
-        updateMap();
+        updateMap(data);
       });
     }
 
-    // Fill select elements
-    function fillSelect(id, values, defaultText) {
+    // Function to fill select options
+    function fillSelect(id, values) {
       const select = document.getElementById(id);
-      select.innerHTML = `<option value="" selected>${defaultText}</option>`;
       Array.from(values).sort().forEach(val => {
         if (val) {
           const option = document.createElement("option");
           option.value = val;
-          option.text = val === "Master" ? "Master" : val === "Laboratory" ? "Laboratoire" : val;
+          option.text = val;
           select.appendChild(option);
         }
       });
     }
 
-    // Update map
-    function updateMap() {
-      markers.forEach(marker => map.removeLayer(marker));
+    // Function to update the map based on filters
+    function updateMap(data) {
+      markers.forEach(m => map.removeLayer(m));
       markers = [];
 
       const type = document.getElementById("typeFilter").value;
@@ -500,48 +595,59 @@
       const agreement = document.getElementById("agreementFilter").value;
       const country = document.getElementById("countryFilter").value;
 
-      const filteredData = data.filter(item => {
-        return (!type || item.Type === type) &&
-               (!programLab || item.Name === programLab) &&
-               (!agreement || item.Agreement === agreement) &&
-               (!country || item.PartnerCountry === country) &&
-               item.Latitude && item.Longitude;
+      console.log("Filtres appliqués - Type :", type);
+      console.log("Filtres appliqués - Programme/Laboratoire :", programLab);
+      console.log("Filtres appliqués - Accord :", agreement);
+      console.log("Filtres appliqués - Pays :", country);
+
+      const filtered = data.filter(d => {
+        return (!type || d.Type === type) &&
+               (!programLab || d.Name === programLab) &&
+               (!agreement || d.Agreement === agreement) &&
+               (!country || d.PartnerCountry === country) &&
+               d.Latitude && d.Longitude;
       });
 
-      filteredData.forEach(item => {
-        const lat = parseFloat(item.Latitude);
-        const lng = parseFloat(item.Longitude);
+      console.log("Données filtrées :", filtered);
+
+      filtered.forEach(d => {
+        const lat = parseFloat(d.Latitude);
+        const lng = parseFloat(d.Longitude);
         if (!isNaN(lat) && !isNaN(lng)) {
           const marker = L.marker([lat, lng]).addTo(map);
-          const popupContent = item.Type === "Master" ? `
-            <b>${item.Name}</b><br>
-            <b>Institution:</b> ${item.RelatedInstitution}<br>
-            <b>Partenaire:</b> ${item.PartnerInstitution}<br>
-            <b>Pays:</b> ${item.PartnerCountry}<br>
-            <b>Ville:</b> ${item.PartnerCity}<br>
-            <b>Accord:</b> ${item.Agreement}<br>
-            <a href="${item.Source}" target="_blank">Plus</a>
+          const popupContent = d.Type === "Master" ? `
+            <b>${d.Name}</b><br>
+            <b>Institution:</b> ${d.RelatedInstitution}<br>
+            <b>Partenaire:</b> ${d.PartnerInstitution}<br>
+            <b>Pays:</b> ${d.PartnerCountry}<br>
+            <b>Ville:</b> ${d.PartnerCity}<br>
+            <b>Programme partenaire:</b> ${d.PartnerProgram}<br>
+            <b>Accord:</b> ${d.Agreement}<br>
+            <a href="${d.Source}" target="_blank">Plus d'info</a>
           ` : `
-            <b>${item.Name}</b><br>
-            <b>Institution:</b> ${item.RelatedInstitution}<br>
-            <b>Partenaire:</b> ${item.PartnerInstitution}<br>
-            <b>Pays:</b> ${item.PartnerCountry}<br>
-            <b>Ville:</b> ${item.PartnerCity}
+            <b>${d.Name}</b><br>
+            <b>Institution:</b> ${d.RelatedInstitution}<br>
+            <b>Partenaire:</b> ${d.PartnerInstitution}<br>
+            <b>Pays:</b> ${d.PartnerCountry}<br>
+            <b>Ville:</b> ${d.PartnerCity}<br>
+            <b>Programme partenaire:</b> ${d.PartnerProgram}
           `;
           marker.bindPopup(popupContent);
           markers.push(marker);
+        } else {
+          console.warn("Coordonnées invalides pour :", d);
         }
       });
     }
 
-    // Event listeners
-    document.getElementById("typeFilter").addEventListener("change", updateMap);
-    document.getElementById("programLabFilter").addEventListener("change", updateMap);
-    document.getElementById("agreementFilter").addEventListener("change", updateMap);
-    document.getElementById("countryFilter").addEventListener("change", updateMap);
+    // Event listeners for filter changes
+    document.getElementById("typeFilter").addEventListener("change", () => updateMap(data));
+    document.getElementById("programLabFilter").addEventListener("change", () => updateMap(data));
+    document.getElementById("agreementFilter").addEventListener("change", () => updateMap(data));
+    document.getElementById("countryFilter").addEventListener("change", () => updateMap(data));
 
     // Load data on page load
-    window.addEventListener("DOMContentLoaded", loadData);
+    window.addEventListener('DOMContentLoaded', loadMapData);
   </script>
 </body>
 </html>
