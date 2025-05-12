@@ -143,30 +143,30 @@
               <h3 class="text-lg font-medium text-blue-800 mb-4">Filtres</h3>
               
               <div class="mb-4">
-                <label for="levelFilter" class="block text-sm font-medium text-gray-700 mb-1">Niveau du programme :</label>
-                <select id="levelFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Tous</option>
+                <label for="typeFilter" class="block text-sm font-medium text-gray-700 mb-1">Type :</label>
+                <select id="typeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="" selected>Tous</option>
                 </select>
               </div>
               
-              <div class="mb-4" id="programFilterContainer" style="display: none;">
-                <label for="programFilter" class="block text-sm font-medium text-gray-700 mb-1">Programme spécifique :</label>
-                <select id="programFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Tous</option>
-                </select>
-              </div>
-              
-              <div class="mb-4">
-                <label for="relationFilter" class="block text-sm font-medium text-gray-700 mb-1">Type de relation :</label>
-                <select id="relationFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Toutes</option>
+              <div class="mb-4" id="programLabFilterContainer" style="display: none;">
+                <label for="programLabFilter" class="block text-sm font-medium text-gray-700 mb-1">Programme/Laboratoire spécifique :</label>
+                <select id="programLabFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="" selected>Tous</option>
                 </select>
               </div>
               
               <div class="mb-4">
                 <label for="agreementFilter" class="block text-sm font-medium text-gray-700 mb-1">Type d'accord :</label>
                 <select id="agreementFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Tous</option>
+                  <option value="" selected>Tous</option>
+                </select>
+              </div>
+              
+              <div class="mb-4">
+                <label for="countryFilter" class="block text-sm font-medium text-gray-700 mb-1">Pays partenaire :</label>
+                <select id="countryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="" selected>Tous</option>
                 </select>
               </div>
               
@@ -411,183 +411,208 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
   <script>
-    // Initialiser la carte
+    // Initializing the map
     let map = L.map("map").setView([45, 3], 3);
 
-    // Charger le fond de carte depuis CartoDB Voyager
+    // Adding CartoDB Voyager tile layer
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
       maxZoom: 20
     }).addTo(map);
 
-    // Exemples d'autres styles de carte (décommentez pour utiliser) :
-    // 1. CartoDB Positron (clair, moderne) :
-    // L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    //   attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
-    //   subdomains: 'abcd',
-    //   maxZoom: 20
-    // }).addTo(map);
-
-    // 2. Stamen Toner (monochrome, contraste élevé) :
-    // L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.png', {
-    //   attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> — Map data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    //   subdomains: 'abcd',
-    //   maxZoom: 20
-    // }).addTo(map);
-
-    // 3. Mapbox (nécessite une clé API) :
-    // L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-    //   attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    //   maxZoom: 18,
-    //   id: 'mapbox/light-v10', // ou 'mapbox/dark-v10', 'mapbox/streets-v11', etc.
-    //   accessToken: 'votre_clé_api_mapbox_ici'
-    // }).addTo(map);
-
     let markers = [];
     let data = [];
 
-    // Fonction pour charger les données CSV
-    function loadMapData() {
-      const csvData = `Related Program level,Related program name,Related Institution,Partner Institution,Partner country,Partner Country,Partner program,Relationship type,International agreeemnt,full_address,Latitude,Longitude
-Master,Physiological and Psychological FOOd choice Determinants (P²FOOD),Institu Agro Dijon (IAD),University of Edinburgh,United Kingdom,Edinburgh,Food and Consumer Behavior,Teaching,Erasmus+,"University of Edinburgh, United Kingdom",55.944076,-3.188374
-Master,Microbiology and Physicochemistry for food and wine Processes MP²,Institu Agro Dijon (IAD),Technical University of Munich,Germany,Munich,Food Chemistry and Microbiology,Teaching,Double degree,"Technical University of Munich, Germany",48.265506,11.669336
-Master,"Biodiversité et Changements Anthropiques : écologie, évolution, gestion (BCA)",Université Bourgogne Europe (UBE),University of Helsinki,Finland,Helsinki,Ecology and Evolutionary Biology,Teaching,Student mobility,"University of Helsinki, Finland",60.226722,25.01767
-Master,Archéologie du Bâti (parcours ArBa),Université Marie & Louis Pasteur (UMLP),University of Bologna,Italy,Bologna,Architectural Conservation,Teaching,Erasmus+,"University of Bologna, Italy",44.498289,11.354457
-Master,"Archéologie, culture, territoires, environnement - Archéo-Géo-Sciences (parcours AGES )",Université Bourgogne Europe (UBE),University of Warsaw,Poland,Warsaw,Archaeological Heritage Management,Teaching,Erasmus Mundus,"University of Warsaw, Poland",52.209143,21.009485
-Master,"Microbiologie, résistance antimicrobienne, génomique, épidémiologie (MAGE)",Université Marie & Louis Pasteur (UMLP),Karolinska Institute,Sweden,Stockholm,Antimicrobial Resistance Research,Teaching,Double degree,"Karolinska Institute, Sweden",59.21955,17.940055
-Master,"Sédimentologie, Paléontologie, Géochimie, Géoressources (SP2G)",Université Bourgogne Europe (UBE),University of Lisbon,Portugal,Lisbon,Geosciences and Paleontology,Teaching,Student mobility,"University of Lisbon, Portugal",38.752538,-9.156846
-Master,"Sol, Eau, Milieux, Environnement (SEME)",Université Bourgogne Europe (UBE),Wageningen University,Netherlands,Wageningen,Environmental Sciences,Teaching,Erasmus+,"Wageningen University, Netherlands",51.985445,5.663212
-Master,"Qualité des Eaux, Sols et Traitements (QuEST)",Université Marie & Louis Pasteur,KU Leuven,Belgium,Leuven,Environmental Engineering,Teaching,Double degree,"KU Leuven, Belgium",50.805713,3.291537
-Master,Biologie Intégrative et Interactions Plante-Microbe-Environnement (B2IPME),Université Bourgogne Europe (UBE),University of Tartu,Estonia,Tartu,Molecular Plant-Microbe Interactions,Teaching,Erasmus+,"University of Tartu, Estonia",58.381014,26.71956
-Master,"Ecology Monitoring and Management of Ecosystems (EMME) (Ecologie, Diagnostic et Gestion des Ecosystèmes)",Université Marie & Louis Pasteur (UMLP),Lund University,Sweden,Lund,Environmental Management and Ecosystems,Teaching,Student mobility,"Lund University, Sweden",55.71265,13.210759
-Master,M1 : Ingénierie de l'environnement et des territoires (IET),Université Marie & Louis Pasteur (UMLP),University of Vienna,Austria,Vienna,Environmental Engineering and Territorial Planning,Teaching,Erasmus+,"University of Vienna, Austria",48.213147,16.35997
-Master,M2 : Gestion Durable de l'Environnement (GDE),Université Marie & Louis Pasteur (UMLP),University of Barcelona,Spain,Barcelona,Sustainable Environmental Management,Teaching,Double degree,"University of Barcelona, Spain",41.38686,2.163478
-Master,Géologie Appliquée (3 G),Université Marie & Louis Pasteur (UMLP),Charles University,Czech Republic,Prague,Applied Geology and Geophysics,Teaching,Erasmus+,"Charles University, Czech Republic",50.086992,14.423714
-Master,Behavioral and Digital Economics for Effective Management (BDEEM),Université Marie & Louis Pasteur (UMLP),University of Belgrade,Serbia,Belgrade,Behavioral Economics and Digital Transformation,Teaching,Erasmus Mundus,"University of Belgrade, Serbia",44.817965,20.450777
-Master,International Master in Microbiology: For the Microbes,Université Bourgogne Europe (UBE),University of Copenhagen,Denmark,Copenhagen,Microbial Biotechnology,Teaching,Double degree,"University of Copenhagen, Denmark",55.68015,12.572327
-Master,"Agroécologie : Agrosciences, Environnement, Territoire, Paysage, Forêt",Institu Agro Dijon (IAD),University of Rostock,Germany,Rostock,Sustainable Agriculture and Agroecology,Teaching,Erasmus+,"University of Rostock, Germany",54.088057,12.133285
-Master,"Changement Climatique, Adaptation, Territoires (CCLIMAT)",Université Bourgogne Europe (UBE),University of Rostock,Germany,Rostock,Climate Adaptation and Spatial Planning,Teaching,Student mobility,"University of Rostock, Germany",54.0880573,12.1332854
-Master,"Aide à la décision, Géomatique et Aménagement pour une Transition Écologique (AGATE)",Université Marie & Louis Pasteur (UMLP),University of Ljubljana,Slovenia,Ljubljana,Geomatics and Ecological Transition,Teaching,Double degree,"University of Ljubljana, Slovenia",46.074405,14.514146
-Master,Dynamique et Conservation de la Biodiversité (DyCoB),Université Bourgogne Europe (UBE),University of Bucharest,Romania,Bucharest,Biodiversity Conservation and Ecology,Teaching,Erasmus+,"University of Bucharest, Romania",44.435644,26.100926
-PhD,École Doctorale Environnement Santé(ED ES),"IAD, UBE, UMLP",Karolinska Institute,Sweden,Stockholm,Environmental Health Doctoral Program,Teaching,Erasmus Mundus,"Karolinska Institute, Sweden",59.21955,17.940055
-PhD,"École Doctorale Droit, Gestion, Economie et Politique ED DGEP)","IAD, UBE, UMLP",University of Bologna,Italy,Bologna,Economics and Political Science Doctorate,Teaching,Double degree,"University of Bologna, Italy",44.498289,11.354457
-PhD,"École Doctorale Sociétés, espace, pratiques, temps (ED SEPT)","IAD, UBE, UMLP",University of Vienna,Austria,Vienna,Social Sciences and Spatial Planning,Teaching,Erasmus+,"University of Vienna, Austria",48.213147,16.35997
-PhD,École Doctorale Carnot Pasteur (ED CP),"IAD, UBE, UMLP",ETH Zürich,Switzerland,Zürich,Science and Technology Doctoral School,Teaching,Double degree,"ETH Zürich, Switzerland",47.413218,8.537491
-Research,UMR 1347 Agro-Ecologie (AE),Université Bourgogne Europe (UBE),University of Rostock,Germany,Rostock,Agroecology Research,Research,Erasmus+,"University of Rostock, Germany",54.088057,12.133285
-Research,UMR 6282 Biogéosciences (BGS),Université Marie & Louis Pasteur (UMLP),Charles University,Czech Republic,Prague,Biogeosciences Research,Research,Student mobility,"Charles University, Czech Republic",50.086992,14.423714
-Research,UMR 1041 Centre d'Economie et de Sociologie Appliquée à l'Agriculture et aux Espaces Ruraux (CESAER),Institu Agro Dijon (IAD),University of Belgrade,Serbia,Belgrade,Agricultural Economics Research,Research,Erasmus+,"University of Belgrade, Serbia",44.817965,20.450777
-Research,UMR 6265 Centre des Sciences du Goût et de l'Alimentation (CSGA),Université Bourgogne Europe (UBE),University of Copenhagen,Denmark,Copenhagen,Food Sensory Science,Research,Double degree,"University of Copenhagen, Denmark",55.68015,12.572327
-Research,UMR 6249 Chrono-environnement (CE),Université Marie & Louis Pasteur (UMLP),University of Warsaw,Poland,Warsaw,Chronoenvironmental Research,Research,Erasmus+,"University of Warsaw, Poland",52.209143,21.009485
-Research,UMR A 02.102 Procédés Alimentaires et Microbiologiques (PAM),Université Bourgogne Europe (UBE),University of Helsinki,Finland,Helsinki,Food Processing and Microbiology,Research,Erasmus Mundus,"University of Helsinki, Finland",60.226722,25.01767
-Research,UMR 6049 Théoriser et Modéliser pour Aménager (ThéMA),Université Bourgogne Europe (UBE),University of Warsaw,Poland,Warsaw,Spatial Modeling and Planning,Research,Student mobility,"University of Warsaw, Poland",52.209143,21.009485
-Research,EA 3190 Centre de REcherche sur les Stratégies Economiques (CRESE),Institu Agro Dijon (IAD),University of Barcelona,Spain,Barcelona,Economic Strategies Research,Research,Double degree,"University of Barcelona, Spain",41.38686,2.163478
-Research,EA 7467 Laboratoire d'Economie de Dijon (LEDI),Université Marie & Louis Pasteur (UMLP),University of Belgrade,Serbia,Belgrade,Economic Research,Research,Erasmus+,"University of Belgrade, Serbia",44.817965,20.450777
-Research,EA 7317 Centre de Recherche en Gestion des Organisations (CREGO),,University of Manchester,United Kingdom,Manchester,Organizational Management Research,Research,Erasmus+,"University of Manchester, United Kingdom",53.466023,-2.233086`;
+    // Hardcoding coordinates for partner cities
+    const cityCoordinates = {
+      "Stuttgart": [48.7758, 9.1829],
+      "Gembloux": [50.5612, 4.6981],
+      "Valencia": [39.4699, -0.3763],
+      "Bonn": [50.7374, 7.0982],
+      "Córdoba": [37.8882, -4.7794],
+      "Vienna": [48.2082, 16.3738],
+      "Helsinki": [60.1699, 24.9384],
+      "Ghent": [51.0543, 3.7174],
+      "Zagreb": [45.8150, 15.9819],
+      "Barcelona": [41.3851, 2.1734],
+      "Gothenburg": [57.7089, 11.9746],
+      "Yerevan": [40.1872, 44.5152],
+      "Prague": [50.0755, 14.4378],
+      "Kaiserslautern": [49.4447, 7.7689],
+      "Istanbul": [41.0082, 28.9784],
+      "Rostock": [54.0924, 12.0991],
+      "Ljubljana": [46.0569, 14.5058],
+      "Bucharest": [44.4268, 26.1025],
+      "Birmingham": [52.4862, -1.8904],
+      "Madrid": [40.4168, -3.7038],
+      "Rennes": [48.1173, -1.6778],
+      "Paris": [48.8566, 2.3522],
+      "Oxford": [51.7520, -1.2577],
+      "Naples": [40.8518, 14.2681],
+      "Innsbruck": [47.2692, 11.4041],
+      "Dijon": [47.3220, 5.0415],
+      "Mulhouse": [47.7508, 7.3359],
+      "Rouen": [49.4432, 1.0999]
+    };
 
-      // Parse CSV data
-      Papa.parse(csvData, {
+    // Function to load and parse CSV data
+    function loadMapData() {
+      // Load Master's data
+      const masterCsv = loadFileData("Relations Internationales des Masters - Données CSV.csv");
+      const labCsv = loadFileData("International_Relations_Transbio.csv");
+
+      // Parse Master's CSV
+      Papa.parse(masterCsv, {
         header: true,
         skipEmptyLines: true,
-        complete: function(results) {
-          data = results.data;
-          console.log("Données chargées :", data);
-          populateFilters(data);
-          updateMap(data);
+        transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
+        transform: (value, header) => value.trim().replace(/^"|"$/g, ''),
+        complete: function(masterResults) {
+          const masterData = masterResults.data.map(row => ({
+            Type: "Master",
+            Name: row["Related Program Name"] || "",
+            RelatedInstitution: row["Related Institution"] || "",
+            PartnerInstitution: row["Partner Institution"] || "",
+            PartnerCountry: row["Partner Country"] || "",
+            PartnerCity: row["Partner City"] || "",
+            PartnerProgram: row["Partner Program"] || "",
+            Agreement: row["International Agreement"] || "",
+            Source: row["Source"] || "",
+            Latitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][0] : 0,
+            Longitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][1] : 0
+          })).filter(row => row.Latitude !== 0 && row.Longitude !== 0);
+
+          // Parse Laboratory CSV
+          Papa.parse(labCsv, {
+            header: true,
+            skipEmptyLines: true,
+            transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
+            transform: (value, header) => value.trim().replace(/^"|"$/g, ''),
+            complete: function(labResults) {
+              const labData = labResults.data.map(row => ({
+                Type: "Laboratory",
+                Name: row["Laboratory"] || "",
+                RelatedInstitution: row["Related Institution"] || "",
+                PartnerInstitution: row["Partner Institution"] || "",
+                PartnerCountry: row["Partner Country"] || "",
+                PartnerCity: row["Partner City"] || "",
+                PartnerProgram: row["Partner Program"] || "",
+                Agreement: "", // No agreement field in lab CSV
+                Source: "", // No source field in lab CSV
+                Latitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][0] : 0,
+                Longitude: cityCoordinates[row["Partner City"]] ? cityCoordinates[row["Partner City"]][1] : 0
+              })).filter(row => row.Latitude !== 0 && row.Longitude !== 0);
+
+              // Combine data
+              data = [...masterData, ...labData];
+              console.log("Données chargées :", data);
+              populateFilters(data);
+              // Ensure map is updated after filters are populated with default "Tous"
+              updateMap(data);
+            },
+            error: function(err) {
+              console.error("Erreur lors du parsing du CSV laboratoire :", err);
+            }
+          });
         },
         error: function(err) {
-          console.error("Erreur lors du parsing CSV:", err);
+          console.error("Erreur lors du parsing du CSV master :", err);
         }
       });
     }
 
-    // Fonction pour peupler les filtres
+    // Function to populate filter options
     function populateFilters(data) {
-      const levels = new Set();
-      const relations = new Set();
-      const agreements = new Set();
-      const programsByLevel = {};
+      const types = new Set(["", "Master", "Laboratory"]); // Ensure "Tous" is represented by empty string
+      const agreements = new Set([""]); // Include "Tous" explicitly
+      const countries = new Set([""]); // Include "Tous" explicitly
+      const namesByType = { Master: new Set(), Laboratory: new Set() };
 
-      // Remplir les sets pour chaque filtre
       data.forEach(d => {
-        if (d['Related Program level']) {
-          levels.add(d['Related Program level']);
-          if (!programsByLevel[d['Related Program level']]) {
-            programsByLevel[d['Related Program level']] = new Set();
-          }
-          if (d['Related program name']) {
-            programsByLevel[d['Related Program level']].add(d['Related program name']);
+        if (d.Type) {
+          types.add(d.Type); // Add unique types
+          if (d.Name) {
+            namesByType[d.Type].add(d.Name);
           }
         }
-        if (d['Relationship type']) relations.add(d['Relationship type']);
-        if (d['International agreeemnt']) agreements.add(d['International agreeemnt']);
+        if (d.Agreement) agreements.add(d.Agreement);
+        if (d.PartnerCountry) countries.add(d.PartnerCountry);
       });
 
-      console.log("Filtres disponibles - Niveau :", levels);
-      console.log("Filtres disponibles - Relation :", relations);
-      console.log("Filtres disponibles - Accord international :", agreements);
+      console.log("Filtres disponibles - Type :", types);
+      console.log("Filtres disponibles - Accord :", agreements);
+      console.log("Filtres disponibles - Pays :", countries);
 
-      fillSelect("levelFilter", levels);
-      fillSelect("relationFilter", relations);
+      fillSelect("typeFilter", types);
       fillSelect("agreementFilter", agreements);
+      fillSelect("countryFilter", countries);
 
-      // Gérer l'affichage du filtre de programme spécifique
-      const levelFilter = document.getElementById("levelFilter");
-      const programFilterContainer = document.getElementById("programFilterContainer");
-      const programFilter = document.getElementById("programFilter");
+      // Ensure all filters are set to "Tous" by default
+      document.getElementById("typeFilter").value = "";
+      document.getElementById("programLabFilter").value = "";
+      document.getElementById("agreementFilter").value = "";
+      document.getElementById("countryFilter").value = "";
 
-      levelFilter.addEventListener("change", () => {
-        const selectedLevel = levelFilter.value;
-        programFilter.innerHTML = '<option value="">Tous</option>';
+      // Handling program/lab filter visibility and population
+      const typeFilter = document.getElementById("typeFilter");
+      const programLabFilterContainer = document.getElementById("programLabFilterContainer");
+      const programLabFilter = document.getElementById("programLabFilter");
+
+      typeFilter.addEventListener("change", () => {
+        const selectedType = typeFilter.value;
+        programLabFilter.innerHTML = '<option value="" selected>Tous</option>';
         
-        if (selectedLevel && programsByLevel[selectedLevel]) {
-          programFilterContainer.style.display = 'block';
-          Array.from(programsByLevel[selectedLevel]).sort().forEach(program => {
+        if (selectedType && namesByType[selectedType]) {
+          programLabFilterContainer.style.display = 'block';
+          Array.from(namesByType[selectedType]).sort().forEach(name => {
             const option = document.createElement("option");
-            option.value = program;
-            option.text = program;
-            programFilter.appendChild(option);
+            option.value = name;
+            option.text = name;
+            programLabFilter.appendChild(option);
           });
         } else {
-          programFilterContainer.style.display = 'none';
+          programLabFilterContainer.style.display = 'none';
         }
         updateMap(data);
       });
     }
 
-    // Fonction pour remplir les options dans un select
+    // Function to fill select options
     function fillSelect(id, values) {
       const select = document.getElementById(id);
+      select.innerHTML = '<option value="" selected>Tous</option>'; // Always include "Tous" as the first option
+
       Array.from(values).sort().forEach(val => {
-        if (val) {
+        if (val && val !== "") { // Skip empty string after the first "Tous"
           const option = document.createElement("option");
           option.value = val;
-          option.text = val;
+          option.text = val === "Master" ? "Master" : val === "Laboratory" ? "Laboratoire" : val;
           select.appendChild(option);
         }
       });
     }
 
-    // Mise à jour de la carte selon les filtres
+    // Function to update the map based on filters
     function updateMap(data) {
       markers.forEach(m => map.removeLayer(m));
       markers = [];
 
-      const level = document.getElementById("levelFilter").value;
-      const program = document.getElementById("programFilter").value;
-      const relation = document.getElementById("relationFilter").value;
+      const type = document.getElementById("typeFilter").value;
+      const programLab = document.getElementById("programLabFilter").value;
       const agreement = document.getElementById("agreementFilter").value;
+      const country = document.getElementById("countryFilter").value;
 
-      console.log("Filtres appliqués - Niveau :", level);
-      console.log("Filtres appliqués - Programme :", program);
-      console.log("Filtres appliqués - Relation :", relation);
-      console.log("Filtres appliqués - Accord international :", agreement);
+      console.log("Filtres appliqués - Type :", type);
+      console.log("Filtres appliqués - Programme/Laboratoire :", programLab);
+      console.log("Filtres appliqués - Accord :", agreement);
+      console.log("Filtres appliqués - Pays :", country);
 
       const filtered = data.filter(d => {
-        return (!level || d['Related Program level'] === level) &&
-               (!program || d['Related program name'] === program) &&
-               (!relation || d['Relationship type'] === relation) &&
-               (!agreement || d['International agreeemnt'] === agreement) &&
+        return (!type || d.Type === type) &&
+               (!programLab || d.Name === programLab) &&
+               (!agreement || d.Agreement === agreement) &&
+               (!country || d.PartnerCountry === country) &&
                d.Latitude && d.Longitude;
       });
 
@@ -598,29 +623,38 @@ Research,EA 7317 Centre de Recherche en Gestion des Organisations (CREGO),,Unive
         const lng = parseFloat(d.Longitude);
         if (!isNaN(lat) && !isNaN(lng)) {
           const marker = L.marker([lat, lng]).addTo(map);
-          marker.bindPopup(`
-            <b>${d['Related program name']}</b><br>
-            <b>Institution:</b> ${d['Related Institution']}<br>
-            <b>Partenaire:</b> ${d['Partner Institution']}<br>
-            <b>Pays:</b> ${d['Partner country']}<br>
-            <b>Programme partenaire:</b> ${d['Partner program']}<br>
-            <b>Type de relation:</b> ${d['Relationship type']}<br>
-            <b>Accord:</b> ${d['International agreeemnt']}
-          `);
+          const popupContent = d.Type === "Master" ? `
+            <b>${d.Name}</b><br>
+            <b>Institution:</b> ${d.RelatedInstitution}<br>
+            <b>Partenaire:</b> ${d.PartnerInstitution}<br>
+            <b>Pays:</b> ${d.PartnerCountry}<br>
+            <b>Ville:</b> ${d.PartnerCity}<br>
+            <b>Programme partenaire:</b> ${d.PartnerProgram}<br>
+            <b>Accord:</b> ${d.Agreement}<br>
+            <a href="${d.Source}" target="_blank">Plus d'info</a>
+          ` : `
+            <b>${d.Name}</b><br>
+            <b>Institution:</b> ${d.RelatedInstitution}<br>
+            <b>Partenaire:</b> ${d.PartnerInstitution}<br>
+            <b>Pays:</b> ${d.PartnerCountry}<br>
+            <b>Ville:</b> ${d.PartnerCity}<br>
+            <b>Programme partenaire:</b> ${d.PartnerProgram}
+          `;
+          marker.bindPopup(popupContent);
           markers.push(marker);
         } else {
-          console.warn("Coordonnées invalides pour le programme :", d);
+          console.warn("Coordonnées invalides pour :", d);
         }
       });
     }
 
-    // Écouter les changements des filtres pour mettre à jour la carte
-    document.getElementById("levelFilter").addEventListener("change", () => updateMap(data));
-    document.getElementById("programFilter").addEventListener("change", () => updateMap(data));
-    document.getElementById("relationFilter").addEventListener("change", () => updateMap(data));
+    // Event listeners for filter changes
+    document.getElementById("typeFilter").addEventListener("change", () => updateMap(data));
+    document.getElementById("programLabFilter").addEventListener("change", () => updateMap(data));
     document.getElementById("agreementFilter").addEventListener("change", () => updateMap(data));
+    document.getElementById("countryFilter").addEventListener("change", () => updateMap(data));
 
-    // Charger les données au chargement de la page
+    // Load data on page load
     window.addEventListener('DOMContentLoaded', loadMapData);
   </script>
 </body>
