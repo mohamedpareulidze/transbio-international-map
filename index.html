@@ -428,72 +428,74 @@
     let markers = [];
     let data = [];
 
+    // Function to load CSV files
+    function loadFileData(filename) {
+      return fetch(filename)
+        .then(response => {
+          if (!response.ok) throw new Error(`Erreur lors du chargement de ${filename}`);
+          return response.text();
+        })
+        .catch(error => console.error(error));
+    }
+
     // Loading data
     function loadMapData() {
-      // Load CSV data
-      const masterCsv = loadFileData("Relations-Internationales-des-Masters_with_coords.csv");
-      const labCsv = loadFileData("International_Relations_Transbio_with_coords.csv");
+      Promise.all([
+        loadFileData("Relations-Internationales-des-Masters_with_coords.csv"),
+        loadFileData("International_Relations_Transbio_with_coords.csv")
+      ]).then(([masterCsv, labCsv]) => {
+        Papa.parse(masterCsv, {
+          header: true,
+          skipEmptyLines: true,
+          transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
+          transform: (value, header) => value.trim().replace(/^"|"$/g, ''),
+          complete: function(masterResults) {
+            const masterData = masterResults.data.map(row => ({
+              Type: "Master",
+              Name: row["Related Program Name"] || "",
+              RelatedInstitution: row["Related Institution"] || "",
+              PartnerInstitution: row["Partner Institution"] || "",
+              PartnerCountry: row["Partner Country"] || "",
+              PartnerCity: row["Partner City"] || "",
+              PartnerProgram: row["Partner Program"] || "",
+              Agreement: row["International Agreement"] || "",
+              Latitude: parseFloat(row["latitude"]) || 0,
+              Longitude: parseFloat(row["longitude"]) || 0
+            })).filter(row => row.Latitude !== 0 && row.Longitude !== 0);
 
-      // Parse Master's CSV
-      Papa.parse(masterCsv, {
-        header: true,
-        skipEmptyLines: true,
-        transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
-        transform: (value, header) => {
-          let cleaned = value.trim().replace(/^"|"$/g, '');
-          return cleaned;
-        },
-        complete: function(masterResults) {
-          const masterData = masterResults.data.map(row => ({
-            Type: "Master",
-            Name: row["Related Program Name"] || "",
-            RelatedInstitution: row["Related Institution"] || "",
-            PartnerInstitution: row["Partner Institution"] || "",
-            PartnerCountry: row["Partner Country"] || "",
-            PartnerCity: row["Partner City"] || "",
-            PartnerProgram: row["Partner Program"] || "",
-            Agreement: row["International Agreement"] || "",
-            Latitude: parseFloat(row["latitude"]) || 0,
-            Longitude: parseFloat(row["longitude"]) || 0
-          })).filter(row => row.Latitude !== 0 && row.Longitude !== 0);
+            Papa.parse(labCsv, {
+              header: true,
+              skipEmptyLines: true,
+              transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
+              transform: (value, header) => value.trim().replace(/^"|"$/g, ''),
+              complete: function(labResults) {
+                const labData = labResults.data.map(row => ({
+                  Type: "Laboratory",
+                  Name: row["Laboratory"] || "",
+                  RelatedInstitution: row["Related Institution"] || "",
+                  PartnerInstitution: row["Partner Institution"] || "",
+                  PartnerCountry: row["Partner Country"] || "",
+                  PartnerCity: row["Partner City"] || "",
+                  PartnerProgram: row["Partner Program"] || "",
+                  Agreement: "",
+                  Latitude: parseFloat(row["latitude"]) || 0,
+                  Longitude: parseFloat(row["longitude"]) || 0
+                })).filter(row => row.Latitude !== 0 && row.Longitude !== 0);
 
-          // Parse Laboratory CSV
-          Papa.parse(labCsv, {
-            header: true,
-            skipEmptyLines: true,
-            transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
-            transform: (value, header) => {
-              let cleaned = value.trim().replace(/^"|"$/g, '');
-              return cleaned;
-            },
-            complete: function(labResults) {
-              const labData = labResults.data.map(row => ({
-                Type: "Laboratory",
-                Name: row["Laboratory"] || "",
-                RelatedInstitution: row["Related Institution"] || "",
-                PartnerInstitution: row["Partner Institution"] || "",
-                PartnerCountry: row["Partner Country"] || "",
-                PartnerCity: row["Partner City"] || "",
-                PartnerProgram: row["Partner Program"] || "",
-                Agreement: "", // No agreement field in lab CSV
-                Latitude: parseFloat(row["latitude"]) || 0,
-                Longitude: parseFloat(row["longitude"]) || 0
-              })).filter(row => row.Latitude !== 0 && row.Longitude !== 0);
-
-              // Combine data
-              data = [...masterData, ...labData];
-              populateFilters(data);
-              updateMap(data);
-            },
-            error: function(err) {
-              console.error("Erreur lors du parsing du CSV laboratoire :", err);
-            }
-          });
-        },
-        error: function(err) {
-          console.error("Erreur lors du parsing du CSV master :", err);
-        }
-      });
+                data = [...masterData, ...labData];
+                populateFilters(data);
+                updateMap(data);
+              },
+              error: function(err) {
+                console.error("Erreur lors du parsing du CSV laboratoire :", err);
+              }
+            });
+          },
+          error: function(err) {
+            console.error("Erreur lors du parsing du CSV master :", err);
+          }
+        });
+      }).catch(error => console.error("Erreur lors du chargement des fichiers :", error));
     }
 
     // Populating filter options
