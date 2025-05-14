@@ -27,13 +27,13 @@
         }
         
         .header-title {
-            font-size: 2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: #ffffff;
         }
         
-        .hero-text {
-            font-size: 1.5rem;
+        .header-subtitle {
+            font-size: 0.75rem;
             color: #e2e8f0;
         }
         
@@ -87,23 +87,40 @@
                 page-break-inside: avoid;
             }
         }
+        
+        /* Responsive header adjustments */
+        @media (max-width: 768px) {
+            header {
+                padding: 0.5rem 0;
+            }
+            .header-title {
+                font-size: 1rem;
+            }
+            .header-subtitle {
+                font-size: 0.625rem;
+            }
+            nav ul {
+                flex-direction: column;
+                space-x-0 space-y-1;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
     <!-- Header -->
-    <header class="bg-blue-700 text-white py-6">
+    <header class="bg-blue-900 text-white py-4">
         <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
             <div>
                 <h1 class="header-title">Transbio Graduate School</h1>
-                <p class="hero-text">L'excellence au service de la recherche et de l'éducation</p>
+                <p class="header-subtitle">L'excellence dans la recherche et l'éducation</p>
             </div>
-            <nav class="mt-4 md:mt-0">
-                <ul class="flex space-x-8">
-                    <li><a href="#map-section" class="hover:text-blue-300 font-semibold">Carte des partenaires</a></li>
-                    <li><a href="#networks" class="hover:text-blue-300 font-semibold">Réseaux</a></li>
-                    <li><a href="#global" class="hover:text-blue-300 font-semibold">Global</a></li>
-                    <li><a href="#mobility" class="hover:text-blue-300 font-semibold">Mobilité</a></li>
-                    <li><a href="#updates" class="hover:text-blue-300 font-semibold">Mises à jour</a></li>
+            <nav class="mt-2 md:mt-0">
+                <ul class="flex space-x-4">
+                    <li><a href="#map-section" class="hover:text-blue-300 font-semibold text-sm">Carte des partenaires</a></li>
+                    <li><a href="#networks" class="hover:text-blue-300 font-semibold text-sm">Réseaux</a></li>
+                    <li><a href="#international" class="hover:text-blue-300 font-semibold text-sm">International</a></li>
+                    <li><a href="#mobility" class="hover:text-blue-300 font-semibold text-sm">Étudier à l'étranger</a></li>
+                    <li><a href="#updates" class="hover:text-blue-300 font-semibold text-sm">Actualités</a></li>
                 </ul>
             </nav>
         </div>
@@ -210,7 +227,7 @@
             </section>
 
             <!-- Global Section -->
-            <section id="global" class="mb-12">
+            <section id="international" class="mb-12">
                 <h2 class="section-title text-2xl font-bold text-blue-900 mb-4">Dimension Globale</h2>
                 <p class="mb-6 text-gray-600">Nous collaborons au-delà des frontières pour enrichir notre communauté.</p>
                 
@@ -340,7 +357,7 @@
                     <ul class="space-y-2">
                         <li><a href="#map-section" class="text-blue-100 hover:text-white">Carte</a></li>
                         <li><a href="#networks" class="text-blue-100 hover:text-white">Réseaux</a></li>
-                        <li><a href="#global" class="text-blue-100 hover:text-white">Global</a></li>
+                        <li><a href="#international" class="text-blue-100 hover:text-white">Global</a></li>
                         <li><a href="#mobility" class="text-blue-100 hover:text-white">Mobilité</a></li>
                         <li><a href="#updates" class="text-blue-100 hover:text-white">Actualités</a></li>
                     </ul>
