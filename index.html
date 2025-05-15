@@ -73,9 +73,68 @@
             background-color: #2c5282;
         }
         
+        .btn-toggle {
+            background-color: #2b6cb0;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-toggle:hover {
+            background-color: #2c5282;
+        }
+        
+        .btn-export {
+            background-color: #2b6cb0;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .btn-export:hover {
+            background-color: #2c5282;
+        }
+        
         .popup-content {
             max-height: 200px;
             overflow-y: auto;
+        }
+        
+        .table-container {
+            display: none;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            max-height: 550px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background-color: #2b6cb0;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f1f5f9;
         }
         
         @media print {
@@ -85,6 +144,15 @@
             }
             section {
                 page-break-inside: avoid;
+            }
+            .btn-export, .btn-toggle, .filter-panel {
+                display: none;
+            }
+            .table-container {
+                display: block !important;
+            }
+            .map-container {
+                display: none !important;
             }
         }
         
@@ -102,6 +170,9 @@
             nav ul {
                 flex-direction: column;
                 space-x-0 space-y-1;
+            }
+            .table-container, #map {
+                max-height: 400px;
             }
         }
     </style>
@@ -191,10 +262,29 @@
                         </div>
                     </div>
                     
-                    <!-- Map -->
-                    <div class="w-full md:w-3/4">
-                        <div class="map-container">
+                    <!-- Map and Table Container -->
+                    <div class="w-full md:w-3/4 relative">
+                        <div class="flex justify-end mb-4">
+                            <button id="toggleViewBtn" class="btn-toggle">Afficher le tableau</button>
+                        </div>
+                        <div class="map-container" id="mapContainer">
                             <div id="map"></div>
+                        </div>
+                        <div class="table-container" id="tableContainer">
+                            <table id="partnersTable">
+                                <thead>
+                                    <tr>
+                                        <th>École</th>
+                                        <th>Pays</th>
+                                        <th>Ville</th>
+                                        <th>Institution partenaire</th>
+                                        <th>Programme</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody">
+                                    <!-- Table rows will be populated dynamically -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -238,6 +328,7 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <AlternateRow>Programs</AlternateRow>
                     <div class="bg-white p-6 rounded-lg shadow-md">
                         <h3 class="text-xl font-semibold text-blue-800 mb-3">Programmes</h3>
                         <ul class="list-disc pl-5 space-y-2 text-gray-700">
@@ -333,6 +424,9 @@
         </div>
     </main>
 
+    <!-- Export PDF Button -->
+    <button id="exportPdfBtn" class="btn-export">Exporter en PDF</button>
+
     <!-- Footer -->
     <footer class="py-10 bg-blue-900 text-white">
         <div class="container mx-auto px-6">
@@ -379,6 +473,9 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <!-- jsPDF and html2canvas for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <script>
         // Hardcoded data from Relations-Internationales.csv
         const partners = [
@@ -412,22 +509,22 @@
             { "Related Program Level": "Master", "Related Program Name": "Ecology Monitoring and Management of Ecosystems (EMME)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Université de Liège Gembloux Agro-Bio Tech", "Partner Country": "Belgium", "Partner City": "Gembloux", "Partner Program": "Master's programs in Chemical engineering and processes/Food processing", "International Agreement": "Erasmus+", "latitude": 50.5597273, "longitude": 4.6943126 },
             { "Related Program Level": "Master", "Related Program Name": "Ecology Monitoring and Management of Ecosystems (EMME)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Chalmers University of Technology", "Partner Country": "Sweden", "Partner City": "Gothenburg", "Partner Program": "Master's programs in Food processing and Chemistry", "International Agreement": "Erasmus+", "latitude": 57.7072326, "longitude": 11.9670171 },
             { "Related Program Level": "Master", "Related Program Name": "M1 : Ingénierie de l’environnement et des territoires (IET)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Chalmers University of Technology", "Partner Country": "Sweden", "Partner City": "Gothenburg", "Partner Program": "Master's programs in Food processing and Chemistry", "International Agreement": "Erasmus+", "latitude": 57.7072326, "longitude": 11.9670171 },
-            { "Related Program Level": "Master", "Related Program Name": "M1 : Ingénierie de l’environnement et des territoires (IET)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.18001327 },
-            { "Related Program Level": "Master", "Related Program Name": "M1 : Ingénierie de l’environnement et des territoires (IET)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Université de Liège Gembloux Agro-Bio Tech", "Partner Country": "Belgium", "Partner City": "Gembloux", "Partner Program": "Master's programs in Chemical engineering and processes/Food processing", "International Agreement": "Erasmus+", "latitude": 50.5597273, "longitude": 4.69431267 },
+            { "Related Program Level": "Master", "Related Program Name": "M1 : Ingénierie de l’environnement et des territoires (IET)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.1800132 },
+            { "Related Program Level": "Master", "Related Program Name": "M1 : Ingénierie de l’environnement et des territoires (IET)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Université de Liège Gembloux Agro-Bio Tech", "Partner Country": "Belgium", "Partner City": "Gembloux", "Partner Program": "Master's programs in Chemical engineering and processes/Food processing", "International Agreement": "Erasmus+", "latitude": 50.5597273, "longitude": 4.6943126 },
             { "Related Program Level": "Master", "Related Program Name": "M2 : Gestion Durable de l’Environnement (GDE)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Chalmers University of Technology", "Partner Country": "Sweden", "Partner City": "Gothenburg", "Partner Program": "Master's programs in Food processing and Chemistry", "International Agreement": "Erasmus+", "latitude": 57.7072326, "longitude": 11.9670171 },
-            { "Related Program Level": "Master", "Related Program Name": "M2 : Gestion Durable de l’Environnement (GDE)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.18001327 },
-            { "Related Program Level": "Master", "Related Program Name": "M2 : Gestion Durable de l’Environnement (GDE)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Université de Liège Gembloux Agro-Bio Tech", "Partner Country": "Belgium", "Partner City": "Gembloux", "Partner Program": "Master's programs in Chemical engineering and processes/Food processing", "International Agreement": "Erasmus+", "latitude": 50.5597273, "longitude": 4.69431267 },
+            { "Related Program Level": "Master", "Related Program Name": "M2 : Gestion Durable de l’Environnement (GDE)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.1800132 },
+            { "Related Program Level": "Master", "Related Program Name": "M2 : Gestion Durable de l’Environnement (GDE)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Université de Liège Gembloux Agro-Bio Tech", "Partner Country": "Belgium", "Partner City": "Gembloux", "Partner Program": "Master's programs in Chemical engineering and processes/Food processing", "International Agreement": "Erasmus+", "latitude": 50.5597273, "longitude": 4.6943126 },
             { "Related Program Level": "Master", "Related Program Name": "Géologie Appliquée (3 G)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "University of Chemistry and Technology UCT Prague", "Partner Country": "Czech Republic", "Partner City": "Prague", "Partner Program": "Master's programs in Natural sciences, mathematics and statistics/Engineering, manufacturing and construction", "International Agreement": "Erasmus+", "latitude": 50.0874654, "longitude": 14.4212535 },
             { "Related Program Level": "Master", "Related Program Name": "Géologie Appliquée (3 G)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Technische Universität Kaiserslautern", "Partner Country": "Germany", "Partner City": "Kaiserslautern", "Partner Program": "Master's programs in Information and Communication, Electronics and automation, Mathematics, Physics, Chemistry", "International Agreement": "Erasmus+", "latitude": 49.4432174, "longitude": 7.76899517 },
             { "Related Program Level": "Master", "Related Program Name": "Behavioral and Digital Economics for Effective Management (BDEEM)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Haliç University", "Partner Country": "Turkey", "Partner City": "Istanbul", "Partner Program": "Master's programs in Business and administration", "International Agreement": "Erasmus+", "latitude": 41.0063817, "longitude": 28.9758715 },
             { "Related Program Level": "Master", "Related Program Name": "International Master in Microbiology: For the Microbes", "Related Institution": "Université Marie & Louis Pasteur (UMLP), Université Johannes Gutenberg (JGU)", "Partner Institution": "Yerevan State University", "Partner Country": "Armenia", "Partner City": "Yerevan", "Partner Program": "Master's in Biology and Physico-Chemistry", "International Agreement": "Double degree", "latitude": 40.1777112, "longitude": 44.5126233 },
             { "Related Program Level": "Master", "Related Program Name": "International Master in Microbiology: For the Microbes", "Related Institution": "Université Marie & Louis Pasteur (UMLP), Université Johannes Gutenberg (JGU)", "Partner Institution": "University of Chemistry and Technology UCT Prague", "Partner Country": "Czech Republic", "Partner City": "Prague", "Partner Program": "Master's programs in Natural sciences, mathematics and statistics/Engineering, manufacturing and construction", "International Agreement": "Erasmus+", "latitude": 50.0874654, "longitude": 14.4212535 },
-            { "Related Program Level": "Master", "Related Program Name": "Agroécologie : Agrosciences, Environnement, Territoire, Paysage, Forêt", "Related Institution": "Université Marie & Louis Pasteur (UMLP), Institut Agro Dijon (IAD)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.18001327 },
-            { "Related Program Level": "Master", "Related Program Name": "Agroécologie : Agrosciences, Environnement, Territoire, Paysage, Forêt", "Related Institution": "Université Marie & Louis Pasteur (UMLP), Institut Agro Dijon (IAD)", "Partner Institution": "Université de Liège Gembloux Agro-Bio Tech", "Partner Country": "Belgium", "Partner City": "Gembloux", "Partner Program": "Master's programs in Chemical engineering and processes/Food processing", "International Agreement": "Erasmus+", "latitude": 50.5597273, "longitude": 4.69431267 },
+            { "Related Program Level": "Master", "Related Program Name": "Agroécologie : Agrosciences, Environnement, Territoire, Paysage, Forêt", "Related Institution": "Université Marie & Louis Pasteur (UMLP), Institut Agro Dijon (IAD)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.1800132 },
+            { "Related Program Level": "Master", "Related Program Name": "Agroécologie : Agrosciences, Environnement, Territoire, Paysage, Forêt", "Related Institution": "Université Marie & Louis Pasteur (UMLP), Institut Agro Dijon (IAD)", "Partner Institution": "Université de Liège Gembloux Agro-Bio Tech", "Partner Country": "Belgium", "Partner City": "Gembloux", "Partner Program": "Master's programs in Chemical engineering and processes/Food processing", "International Agreement": "Erasmus+", "latitude": 50.5597273, "longitude": 4.6943126 },
             { "Related Program Level": "Master", "Related Program Name": "Changement Climatique, Adaptation, Territoires (CCLIMAT)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Chalmers University of Technology", "Partner Country": "Sweden", "Partner City": "Gothenburg", "Partner Program": "Master's programs in Food processing and Chemistry", "International Agreement": "Erasmus+", "latitude": 57.7072326, "longitude": 11.9670171 },
-            { "Related Program Level": "Master", "Related Program Name": "Changement Climatique, Adaptation, Territoires (CCLIMAT)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.18001327 },
+            { "Related Program Level": "Master", "Related Program Name": "Changement Climatique, Adaptation, Territoires (CCLIMAT)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.1800132 },
             { "Related Program Level": "Master", "Related Program Name": "Aide à la décision, Géomatique et Aménagement pour une Transition Écologique (AGATE)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Chalmers University of Technology", "Partner Country": "Sweden", "Partner City": "Gothenburg", "Partner Program": "Master's programs in Food processing and Chemistry", "International Agreement": "Erasmus+", "latitude": 57.7072326, "longitude": 11.9670171 },
-            { "Related Program Level": "Master", "Related Program Name": "Aide à la décision, Géomatique et Aménagement pour une Transition Écologique (AGATE)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.18001327 },
+            { "Related Program Level": "Master", "Related Program Name": "Aide à la décision, Géomatique et Aménagement pour une Transition Écologique (AGATE)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Universität Hohenheim", "Partner Country": "Germany", "Partner City": "Stuttgart", "Partner Program": "Master's programs in Food processing", "International Agreement": "Erasmus+", "latitude": 48.7784485, "longitude": 9.1800132 },
             { "Related Program Level": "Master", "Related Program Name": "Dynamique et Conservation de la Biodiversité (DyCoB)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "Yerevan State University", "Partner Country": "Armenia", "Partner City": "Yerevan", "Partner Program": "Master's in Biology and Physico-Chemistry", "International Agreement": "Double degree", "latitude": 40.1777112, "longitude": 44.5126233 },
             { "Related Program Level": "Master", "Related Program Name": "Dynamique et Conservation de la Biodiversité (DyCoB)", "Related Institution": "Université Marie & Louis Pasteur (UMLP)", "Partner Institution": "University of Chemistry and Technology UCT Prague", "Partner Country": "Czech Republic", "Partner City": "Prague", "Partner Program": "Master's programs in Natural sciences, mathematics and statistics/Engineering, manufacturing and construction", "International Agreement": "Erasmus+", "latitude": 50.0874654, "longitude": 14.4212535 },
             { "Related Program Level": "Laboratory", "Related Program Name": "UMR 1347 Agro-Ecology (AE)", "Related Institution": "INRAE; Institut Agro Dijon; UBFC", "Partner Institution": "University of Birmingham", "Partner Country": "United Kingdom", "Partner City": "Birmingham", "Partner Program": "Research on agricultural ecosystems", "International Agreement": "", "latitude": 52.4506089, "longitude": -2.0067922 },
@@ -459,14 +556,13 @@
 
         // Create a marker cluster group
         const markers = L.markerClusterGroup({
-            maxClusterRadius: 40, // Adjust clustering radius
-            disableClusteringAtZoom: 12, // Stop clustering at zoom level 12
-            spiderfyOnMaxZoom: false // Prevent spiderfying, just zoom in
+            maxClusterRadius: 40,
+            disableClusteringAtZoom: 12,
+            spiderfyOnMaxZoom: false
         });
 
         // Function to add markers with dropdown popups
         function addMarkers(partnerList) {
-            // Group markers by exact coordinates
             const markerGroups = {};
             partnerList.forEach(partner => {
                 const key = `${partner.latitude},${partner.longitude}`;
@@ -476,7 +572,6 @@
                 markerGroups[key].push(partner);
             });
 
-            // Add grouped markers to the cluster group
             Object.entries(markerGroups).forEach(([key, partnersAtLocation]) => {
                 const [lat, lng] = key.split(',');
                 const marker = L.marker([parseFloat(lat), parseFloat(lng)]);
@@ -499,35 +594,94 @@
             });
         }
 
-        // Initially add all markers
+        // Function to populate the table
+        function populateTable(partnerList) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            partnerList.forEach(partner => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${partner["Related Institution"]}</td>
+                    <td>${partner["Partner Country"]}</td>
+                    <td>${partner["Partner City"]}</td>
+                    <td>${partner["Partner Institution"]}</td>
+                    <td>${partner["Partner Program"]}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Initially add all markers and populate table
         addMarkers(partners);
+        populateTable(partners);
 
         // Add the cluster group to the map
         map.addLayer(markers);
 
-        // Filter functionality
-        document.getElementById('programLevelFilter').addEventListener('change', updateMap);
-        document.getElementById('countryFilter').addEventListener('change', updateMap);
-        document.getElementById('agreementTypeFilter').addEventListener('change', updateMap);
+        // Toggle between map and table view
+        const toggleViewBtn = document.getElementById('toggleViewBtn');
+        const mapContainer = document.getElementById('mapContainer');
+        const tableContainer = document.getElementById('tableContainer');
+        let isMapView = true;
 
-        function updateMap() {
+        toggleViewBtn.addEventListener('click', () => {
+            isMapView = !isMapView;
+            if (isMapView) {
+                mapContainer.style.display = 'block';
+                tableContainer.style.display = 'none';
+                toggleViewBtn.textContent = 'Afficher le tableau';
+                map.invalidateSize();
+            } else {
+                mapContainer.style.display = 'none';
+                tableContainer.style.display = 'block';
+                toggleViewBtn.textContent = 'Afficher la carte';
+            }
+        });
+
+        // Filter functionality
+        document.getElementById('programLevelFilter').addEventListener('change', updateMapAndTable);
+        document.getElementById('countryFilter').addEventListener('change', updateMapAndTable);
+        document.getElementById('agreementTypeFilter').addEventListener('change', updateMapAndTable);
+
+        function updateMapAndTable() {
             const programLevel = document.getElementById('programLevelFilter').value;
             const country = document.getElementById('countryFilter').value;
             const agreementType = document.getElementById('agreementTypeFilter').value;
 
-            // Clear existing markers
             markers.clearLayers();
 
-            // Filter partners based on selections
             const filteredPartners = partners.filter(partner => {
                 return (programLevel === 'all' || partner["Related Program Level"] === programLevel) &&
                        (country === 'all' || partner["Partner Country"] === country) &&
                        (agreementType === 'all' || partner["International Agreement"] === agreementType);
             });
 
-            // Add filtered markers with dropdown popups
             addMarkers(filteredPartners);
+            populateTable(filteredPartners);
+
+            if (isMapView) {
+                map.invalidateSize();
+            }
         }
+
+        // Export to PDF functionality
+        const { jsPDF } = window.jspdf;
+        document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const tableElement = document.getElementById('partnersTable');
+            const canvas = await html2canvas(tableElement, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = 297; // A4 width in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            doc.save('partenaires_transbio.pdf');
+        });
     </script>
 </body>
 </html>
