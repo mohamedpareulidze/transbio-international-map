@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transbio Graduate School - International Students</title>
+    
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Leaflet MarkerCluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Style -->
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            color: #2d3748;
+            background-color: #f0f4f8;
+        }
+        
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        
+        .header-subtitle {
+            font-size: 0.75rem;
+            color: #e2e8f0;
+        }
+        
+        .map-container {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #map {
+            height: 550px;
+            width: 100%;
+            z-index: 1;
+        }
+        
+        .filter-panel {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .filter-label {
+            font-size: 0.9rem;
+            color: #4a5568;
+        }
+        
+        .btn-toggle, .btn-export {
+            background-color: #2b6cb0;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-toggle:hover, .btn-export:hover {
+            background-color: #2c5282;
+        }
+        
+        .popup-content {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .table-container {
+            display: none;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            max-height: 550px;
+            overflow-y: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background-color: #2b6cb0;
+            color: white;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        /* Custom Toggle Switch Style (iPhone-like) */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+        }
+        
+        .toggle-label {
+            font-size: 0.9rem;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+        }
+        
+        .toggle-label::before {
+            content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="orange" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>');
+            margin-right: 8px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #2b6cb0;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Erasmus+ Filters */
+        .erasmus-filters {
+            display: none;
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+        
+        .erasmus-filters.show {
+            display: block;
+        }
+        
+        /* Additional Section Styles */
+        section {
+            margin-bottom: 3rem;
+        }
+        
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        .social-icon:hover {
+            transform: scale(1.2);
+        }
+        
+        /* Style for "All" option in select dropdowns */
+        select option[value="all"] {
+            opacity: 0.5;
+            color: #4a5568; /* Grey color for legibility */
+        }
+        
+        @media print {
+            #map {
+                height: 400px;
+                page-break-inside: avoid;
+            }
+            section {
+                page-break-inside: avoid;
+            }
+            .btn-export, .btn-toggle, .filter-panel {
+                display: none;
+            }
+            .table-container {
+                display: block !important;
+            }
+            .map-container {
+                display: none !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            header {
+                padding: 0.5rem 0;
+            }
+            .header-title {
+                font-size: 1rem;
+            }
+            .header-subtitle {
+                font-size: 0.625rem;
+            }
+            nav ul {
+                flex-direction: column;
+                space-x-0 space-y-1;
+            }
+            .table-container, #map {
+                max-height: 400px;
+            }
+            .grid-cols-3, .grid-cols-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-blue-900 text-white py-4">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="header-title">Transbio Graduate School</h1>
+                <p class="header-subtitle">Excellence in Research and Education</p>
+            </div>
+            <nav class="mt-2 md:mt-0">
+                <ul class="flex space-x-4">
+                    <li><a href="#" class="hover:text-blue-300 font-semibold text-sm">Home</a></li>
+                    <li><a href="#" class="hover:text-blue-300 font-semibold text-sm">Partners</a></li>
+                    <li><a href="#" class="hover:text-blue-300 font-semibold text-sm">Networks</a></li>
+                    <li><a href="#" class="hover:text-blue-300 font-semibold text-sm">International</a></li>
+                    <li><a href="#" class="hover:text-blue-300 font-semibold text-sm">Mobility</a></li>
+                    <li><a href="#" class="hover:text-blue-300 font-semibold text-sm">Students</a></li>
+                    <li><a href="#" class="hover:text-blue-300 font-semibold text-sm">News</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <div class="bg-blue-600 text-white py-12">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold mb-4">International Student Diversity</h2>
+            <p class="text-lg mb-6">Discover the richness of our global student community</p>
+            <p class="text-blue-100 max-w-2xl">Transbio Graduate School welcomes students from over 50 countries, supported by mobility scholarships and excellence programs such as BDEEM, P²FOOD, 3G, AGATE, ASA, MP2, GDE, Cclimat, EMME, FORTHEM, MAGE, B2IPME, DASEE, Dycob, SP2G, SEME, and QUEST.</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        <div class="container mx-auto px-6 py-10">
+            <!-- Students Section -->
+            <section id="students" class="mb-12">
+                <h2 class="section-title text-2xl font-bold text-blue-900 mb-4">Map of International Students</h2>
+                <p class="mb-6 text-gray-600">Explore the diversity of our students by country of origin, program, and academic year.</p>
+                
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Filter Panel -->
+                    <div class="w-full md:w-1/4">
+                        <div class="filter-panel">
+                            <h3 class="text-xl font-medium text-blue-800 mb-6">Filter Options</h3>
+                            
+                            <div class="mb-6">
+                                <label for="studentProgramFilter" class="filter-label block mb-2">Program:</label>
+                                <select id="studentProgramFilter" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    <option value="all">All</option>
+                                    <option value="AGATE">AGATE</option>
+                                    <option value="ASA">ASA</option>
+                                    <option value="BDEEM">BDEEM</option>
+                                    <option value="Cclimat">Cclimat</option>
+                                    <option value="EMME">EMME</option>
+                                    <option value="FORTHEM">FORTHEM</option>
+                                    <option value="3G">3G</option>
+                                    <option value="GDE">GDE</option>
+                                    <option value="MAGE">MAGE</option>
+                                    <option value="B2IPME">B2IPME</option>
+                                    <option value="DASEE">DASEE</option>
+                                    <option value="Dycob">Dycob</option>
+                                    <option value="MP2">MP2</option>
+                                    <option value="P2FOOD">P²FOOD</option>
+                                    <option value="SEME">SEME</option>
+                                    <option value="SP2G">SP2G</option>
+                                    <option value="QUEST">QUEST</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-6">
+                                <label for="studentYearFilter" class="filter-label block mb-2">Academic Year:</label>
+                                <select id="studentYearFilter" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                    <option value="all">All</option>
+                                    <option value="2024-2025">2024-2025</option>
+                                    <option value="2023-2024">2023-2024</option>
+                                    <option value="2022-2023">2022-2023</option>
+                                    <option value="2021-2022">2021-2022</option>
+                                    <option value="2020-2021">2020-2021</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Incoming Mobility Scholarship Toggle -->
+                            <div class="toggle-container">
+                                <span class="toggle-label">Incoming Mobility Scholarship</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="mobilityScholarshipToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <!-- Outgoing Mobility Scholarship Toggle -->
+                            <div class="toggle-container">
+                                <span class="toggle-label">Outgoing Mobility Scholarship</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="outgoingMobilityToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <!-- Erasmus+ Mobility Scholarship Toggle -->
+                            <div class="toggle-container">
+                                <span class="toggle-label">Erasmus+ Mobility Scholarship</span>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="erasmusMobilityToggle">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <!-- Erasmus+ Filters -->
+                            <div class="erasmus-filters" id="erasmusFilters">
+                                <div class="mb-4">
+                                    <label for="erasmusYearFilter" class="filter-label block mb-2">Erasmus+ Academic Year:</label>
+                                    <select id="erasmusYearFilter" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                        <option value="all">All</option>
+                                        <option value="2024-2025">2024-2025</option>
+                                        <option value="2023-2024">2023-2024</option>
+                                        <option value="2022-2023">2022-2023</option>
+                                        <option value="2021-2022">2021-2022</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label for="erasmusMasterFilter" class="filter-label block mb-2">Erasmus+ Master:</label>
+                                    <select id="erasmusMasterFilter" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
+                                        <option value="all">All</option>
+                                        <option value="BDEEM">BDEEM</option>
+                                        <option value="BEWM">BEWM</option>
+                                        <option value="DASEE">DASEE</option>
+                                        <option value="EMME">EMME</option>
+                                        <option value="MP2">MP2</option>
+                                        <option value="P2FOOD">P²FOOD</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <p class="text-sm text-center text-gray-500 mt-4" id="filterDescription">The map displays the diversity of our students by country of origin. Click on a marker to see more details.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Map and Table Container -->
+                    <div class="w-full md:w-3/4 relative">
+                        <div class="flex justify-end mb-4">
+                            <button id="toggleViewBtn" class="btn-toggle">Show Table</button>
+                        </div>
+                        <div class="map-container" id="mapContainer">
+                            <div id="map"></div>
+                        </div>
+                        <div class="table-container" id="tableContainer">
+                            <table id="studentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Country</th>
+                                        <th>Number of Students</th>
+                                        <th>Programs</th>
+                                        <th>Years</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-4">
+                            <button id="exportPdfBtn" class="btn-export">Export to PDF</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Academic Programs Section -->
+            <section id="programs" class="mb-12">
+                <h2 class="section-title text-2xl font-bold text-blue-900 mb-4">Our Academic Programs</h2>
+                <p class="mb-6 text-gray-600">Discover our international programs designed for scientific excellence and mobility.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md card hover:shadow-lg transition-shadow">
+                        <h3 class="text-xl font-semibold text-blue-800 mb-2">BDEEM</h3>
+                        <p class="text-gray-600">A program focused on biodiversity, ecology, and sustainable management, with international partnerships.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md card hover:shadow-lg transition-shadow">
+                        <h3 class="text-xl font-semibold text-blue-800 mb-2">P²FOOD</h3>
+                        <p class="text-gray-600">Explore innovation in sustainable food systems with transdisciplinary projects.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md card hover:shadow-lg transition-shadow">
+                        <h3 class="text-xl font-semibold text-blue-800 mb-2">EMME</h3>
+                        <p class="text-gray-600">An Erasmus+ master’s program training experts in marine and coastal environments.</p>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <a href="#" class="text-blue-600 font-semibold hover:underline">View All Programs</a>
+                </div>
+            </section>
+
+            <!-- Student Testimonials Section -->
+            <section id="testimonials" class="mb-12">
+                <h2 class="section-title text-2xl font-bold text-blue-900 mb-4">Student Testimonials</h2>
+                <p class="mb-6 text-gray-600">Hear what our international students say about their experience at Transbio.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-md card">
+                        <p class="text-gray-600 italic">"Participating in the BDEEM program allowed me to collaborate with researchers from around the world. An unforgettable experience!"</p>
+                        <p class="mt-4 font-semibold text-blue-800">Aisha, Nigeria</p>
+                        <p class="text-sm text-gray-500">BDEEM Student, 2023-2024</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md card">
+                        <p class="text-gray-600 italic">"Thanks to the Erasmus+ scholarship, I was able to study in France and discover a new culture while continuing my research."</p>
+                        <p class="mt-4 font-semibold text-blue-800">Carlos, Colombia</p>
+                        <p class="text-sm text-gray-500">EMME Student, 2024-2025</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact and Admissions Section -->
+            <section id="contact" class="mb-12">
+                <h2 class="section-title text-2xl font-bold text-blue-900 mb-4">Contact Us</h2>
+                <p class="mb-6 text-gray-600">Join our international community and start your academic journey.</p>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div class="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md card">
+                        <h3 class="text-xl font-semibold text-blue-800 mb-4">Admissions</h3>
+                        <p class="text-gray-600">For more information on applications and scholarships, contact our admissions office.</p>
+                        <a href="mailto:admissions@transbio.edu" class="mt-4 inline-block text-blue-600 font-semibold hover:underline">admissions@transbio.edu</a>
+                    </div>
+                    <div class="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md card">
+                        <h3 class="text-xl font-semibold text-blue-800 mb-4">Social Media</h3>
+                        <p class="text-gray-600">Follow us to stay updated on news and opportunities.</p>
+                        <div class="mt-4 flex space-x-4">
+                            <a href="#" class="text-blue-600 hover:text-blue-800 social-icon"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 2h8a6 6 0 016 6v8a6 6 0 01-6 6H8a6 6 0 01-6-6V8a6 6 0 016-6zm4 4a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8z"/></svg></a>
+                            <a href="#" class="text-blue-600 hover:text-blue-800 social-icon"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22 4s-.7.6-1.4 1.1c1.8.2 3.4 1 4.4 2.3.3-.7.5-1.5.5-2.3C24 4 22 4 22 4zm-2 2c-.7-.4-1.5-.7-2.3-.8 1-.7 1.8-1.6 2.3-2.7-.8.3-1.6.7-2.3 1.1-.7-.7-1.6-1.2-2.6-1.4C13 2 10 3.3 10 6.1c0 .4 0 .7.1 1C7.1 6.8 4.3 5.3 2.2 3c-.8 1.4-.3 3.1.9 4.1-.6 0-1.2-.2-1.7-.5v.1c0 1.7 1.2 3.2 2.9 3.5-.5.1-1 .1-1.5 0 .3 1.1 1.3 1.9 2.4 2-1 .7-2.2 1.1-3.5 1.1-.2 0-.5 0-.7-.1 1.3.8 2.8 1.3 4.4 1.3 5.3 0 8.2-4.4 8.2-8.2v-.4c.6-.4 1.1-.9 1.5-1.5-.6.3-1.2.5-1.9.6.7-.4 1.2-1 1.5-1.8z"/></svg></a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        // Country coordinates (latitude, longitude)
+        const countryCoords = {
+            "Afghanistan": [34.5553, 69.2075],
+            "Albania": [41.3275, 19.8187],
+            "Algeria": [36.7372, 3.0870],
+            "Argentina": [-34.6037, -58.3816],
+            "Armenia": [40.1872, 44.5152],
+            "Australia": [-35.2809, 149.1300],
+            "Austria": [48.2082, 16.3738],
+            "Azerbaijan": [40.4093, 49.8671],
+            "Bangladesh": [23.8103, 90.4125],
+            "Belarus": [53.9045, 27.5615],
+            "Belgium": [50.8503, 4.3517],
+            "Benin": [6.4979, 2.6051],
+            "Bolivia": [-16.5000, -68.1193],
+            "Brazil": [-15.8267, -47.9218],
+            "Burkina Faso": [12.3714, -1.5197],
+            "Cambodia": [11.5564, 104.9282],
+            "Canada": [45.4215, -75.6972],
+            "Chad": [12.1348, 15.0557],
+            "China": [39.9042, 116.4074],
+            "Colombia": [4.7110, -74.0721],
+            "Comoros": [-11.7172, 43.2473],
+            "Congo-Brazzaville": [-4.2634, 15.2429],
+            "Croatia": [45.8150, 15.9819],
+            "Côte d'Ivoire": [5.3599, -4.0083],
+            "Cyprus": [35.1856, 33.3823],
+            "Czech Republic": [50.0755, 14.4378],
+            "Democratic Republic of the Congo": [-4.4419, 15.2663],
+            "Denmark": [55.6761, 12.5683],
+            "Ecuador": [-0.1807, -78.4678],
+            "Finland": [60.1699, 24.9384],
+            "France": [48.8566, 2.3522],
+            "Gabon": [0.4162, 9.4673],
+            "Germany": [52.5200, 13.4050],
+            "Ghana": [5.6037, -0.1870],
+            "Greece": [37.9838, 23.7275],
+            "Guinea": [9.6412, -13.5784],
+            "Haiti": [18.5944, -72.3074],
+            "Hungary": [47.4979, 19.0402],
+            "Iceland": [64.1355, -21.8954],
+            "India": [28.6139, 77.2090],
+            "Iran": [35.6892, 51.3890],
+            "Isle of Man": [54.2361, -4.5481],
+            "Italy": [41.9028, 12.4964],
+            "Jordan": [31.9539, 35.9106],
+            "Kazakhstan": [51.1694, 71.4491],
+            "Lebanon": [33.8938, 35.5018],
+            "Luxembourg": [49.8153, 6.1296],
+            "Macedonia": [41.9973, 21.4280],
+            "Madagascar": [-18.8792, 47.5079],
+            "Mali": [12.6392, -8.0029],
+            "Mauritius": [-20.3484, 57.5522],
+            "Mexico": [19.4326, -99.1332],
+            "Moldova": [47.0167, 28.8497],
+            "Mongolia": [47.8864, 106.9057],
+            "Morocco": [34.0209, -6.8368],
+            "Montenegro": [42.4413, 19.2621],
+            "Nepal": [27.7172, 85.3240],
+            "Netherlands": [52.3676, 4.9041],
+            "Nigeria": [9.0579, 7.4951],
+            "Norway": [59.9139, 10.7522],
+            "Pakistan": [33.6844, 73.0479],
+            "Palestine": [31.7683, 35.2137],
+            "Peru": [-12.0464, -77.0428],
+            "Philippines": [14.5995, 120.9842],
+            "Poland": [52.2297, 21.0122],
+            "Portugal": [38.7223, -9.1393],
+            "Russia": [55.7558, 37.6173],
+            "Senegal": [14.6928, -17.4467],
+            "Serbia": [44.7866, 20.4489],
+            "Seychelles": [-4.6796, 55.4920],
+            "Singapore": [1.3521, 103.8198],
+            "South Africa": [-25.7461, 28.1881],
+            "South Korea": [37.5665, 126.9780],
+            "Spain": [40.4168, -3.7038],
+            "Sri Lanka": [6.9271, 79.8612],
+            "Sweden": [59.3293, 18.0686],
+            "Switzerland": [46.9481, 7.4474],
+            "Syria": [33.5138, 36.2765],
+            "Togo": [6.1256, 1.2254],
+            "Tunisia": [36.8065, 10.1815],
+            "Turkey": [39.9334, 32.8597],
+            "Uganda": [0.3476, 32.5825],
+            "United Kingdom": [51.5074, -0.1278],
+            "United States of America": [38.9072, -77.0369],
+            "Vietnam": [21.0285, 105.8542],
+            "Zambia": [-15.4167, 28.2833],
+            "Zimbabwe": [-17.8292, 31.0522]
+        };
+
+        // Raw student data
+        const rawStudentData = [];
+        const programs = ["AGATE", "ASA", "BDEEM", "Cclimat", "EMME", "FORTHEM", "3G", "GDE", "MAGE", "B2IPME", "DASEE", "Dycob", "MP2", "P2FOOD", "SEME", "SP2G", "QUEST"];
+        const years = ["2024-2025", "2023-2024", "2022-2023", "2021-2022", "2020-2021"];
+
+        // EMME Data
+        const emmeData = {
+            "2024-2025": {
+                "Belarus": 1,
+                "Belgium": 1,
+                "Canada": 1,
+                "France": 24,
+                "Ghana": 1,
+                "Iceland": 1,
+                "Mauritius": 1,
+                "Sri Lanka": 1,
+                "Uganda": 1,
+                "United States of America": 1,
+                "Zambia": 1
+            },
+            "2023-2024": {
+                "Argentina": 1,
+                "France": 25,
+                "Ghana": 1,
+                "Isle of Man": 1,
+                "Mauritius": 1,
+                "Russia": 1,
+                "United Kingdom": 1,
+                "United States of America": 1,
+                "Zambia": 1
+            },
+            "2022-2023": {
+                "Belarus": 1,
+                "France": 11,
+                "Isle of Man": 1,
+                "Spain": 1,
+                "United Kingdom": 2
+            },
+            "2021-2022": {
+                "Belgium": 1,
+                "France": 7,
+                "Mexico": 1,
+                "Russia": 1
+            },
+            "2020-2021": {
+                "France": 9,
+                "Ghana": 1,
+                "India": 1,
+                "United Kingdom": 1
+            }
+        };
+
+        // SEME Data
+        const semeData = {
+            "2024-2025": {
+                "Colombia": 1,
+                "Comoros": 2,
+                "Democratic Republic of the Congo": 1,
+                "France": 14,
+                "Haiti": 1,
+                "Peru": 1
+            },
+            "2023-2024": {
+                "Comoros": 2,
+                "Côte d'Ivoire": 1,
+                "France": 12,
+                "Gabon": 1,
+                "Peru": 1
+            },
+            "2022-2023": {
+                "Algeria": 1,
+                "France": 20,
+                "Lebanon": 1,
+                "Mexico": 1
+            },
+            "2021-2022": {
+                "France": 16,
+                "Senegal": 1
+            },
+            "2020-2021": {
+                "Côte d'Ivoire": 1,
+                "France": 13,
+                "Gabon": 1,
+                "Senegal": 1
+            }
+        };
+
+        // AGATE Data
+        const agateData = {
+            "2024-2025": {
+                "Algeria": 1,
+                "Benin": 1,
+                "Brazil": 1,
+                "Burkina Faso": 1,
+                "France": 15,
+                "Morocco": 1,
+                "Senegal": 2
+            },
+            "2023-2024": {},
+            "2022-2023": {},
+            "2021-2022": {},
+            "2020-2021": {}
+        };
+
+        // ASA Data
+        const asaData = {
+            "2024-2025": {
+                "Algeria": 1,
+                "Colombia": 1,
+                "France": 28,
+                "Germany": 1,
+                "Spain": 1
+            },
+            "2023-2024": {
+                "Algeria": 1,
+                "Colombia": 1,
+                "France": 27,
+                "Germany": 1
+            },
+            "2022-2023": {
+                "Algeria": 1,
+                "France": 28
+            },
+            "2021-2022": {},
+            "2020-2021": {}
+        };
+
+        // BDEEM Data
+        const bdeemData = {
+            "2024-2025": {
+                "Algeria": 2,
+                "Armenia": 1,
+                "Cambodia": 1,
+                "China": 1,
+                "France": 5,
+                "Ghana": 1,
+                "India": 3,
+                "Kazakhstan": 1,
+                "Lebanon": 1,
+                "Madagascar": 1,
+                "Mongolia": 1,
+                "Nepal": 2,
+                "Nigeria": 5,
+                "Pakistan": 6,
+                "Palestine": 1,
+                "Russia": 2,
+                "Tunisia": 1
+            },
+            "2023-2024": {
+                "Algeria": 1,
+                "Armenia": 2,
+                "Benin": 1,
+                "Cambodia": 3,
+                "France": 3,
+                "Ghana": 2,
+                "India": 4,
+                "Lebanon": 4,
+                "Mongolia": 1,
+                "Nepal": 2,
+                "Nigeria": 2,
+                "Pakistan": 3,
+                "Russia": 3
+            },
+            "2022-2023": {
+                "Benin": 1,
+                "Cambodia": 2,
+                "Ghana": 1,
+                "India": 3,
+                "Lebanon": 4,
+                "Nepal": 1,
+                "Russia": 1,
+                "Vietnam": 1
+            },
+            "2021-2022": {
+                "France": 1,
+                "Ghana": 1,
+                "India": 1,
+                "Lebanon": 3,
+                "Morocco": 3,
+                "Russia": 1,
+                "Vietnam": 1,
+                "Zambia": 1
+            },
+            "2020-2021": {}
+        };
+
+        // Cclimat Data
+        const cclimatData = {
+            "2024-2025": {
+                "France": 21,
+                "Haiti": 1,
+                "Madagascar": 1,
+                "Senegal": 1,
+                "Chad": 1
+            },
+            "2023-2024": {
+                "Benin": 1,
+                "Congo-Brazzaville": 1,
+                "France": 19,
+                "Haiti": 1,
+                "Senegal": 2,
+                "Chad": 1
+            },
+            "2022-2023": {
+                "Algeria": 1,
+                "France": 8
+            },
+            "2021-2022": {},
+            "2020-2021": {}
+        };
+
+        // FORTHEM Data
+        const forthemData = {
+            "2024-2025": {
+                "France": 3,
+                "Germany": 6,
+                "Iran": 1
+            },
+            "2023-2024": {
+                "France": 3,
+                "Germany": 9,
+                "Greece": 1,
+                "Spain": 3
+            },
+            "2022-2023": {
+                "France": 9,
+                "Germany": 1
+            },
+            "2021-2022": {},
+            "2020-2021": {}
+        };
+
+        // 3G Data
+        const threeGData = {
+            "2024-2025": {
+                "Benin": 1,
+                "Congo-Brazzaville": 1,
+                "France": 32,
+                "Madagascar": 1,
+                "Portugal": 1
+            },
+            "2023-2024": {
+                "Benin": 2,
+                "France": 39,
+                "Madagascar": 1,
+                "Morocco": 1,
+                "Nigeria": 1,
+                "Portugal": 2,
+                "Russia": 1
+            },
+            "2022-2023": {
+                "Benin": 1,
+                "France": 40,
+                "Mali": 1,
+                "Nigeria": 1,
+                "Portugal": 1,
+                "Russia": 1
+            },
+            "2021-2022": {
+                "Albania": 1,
+                "Colombia": 1,
+                "France": 38,
+                "Guinea": 1,
+                "Mali": 2
+            },
+            "2020-2021": {
+                "Albania": 1,
+                "France": 33,
+                "Guinea": 3,
+                "Mali": 1,
+                "Peru": 1
+            }
+        };
+
+        // GDE Data
+        const gdeData = {
+            "2024-2025": {
+                "France": 26
+            },
+            "2023-2024": {
+                "France": 30
+            },
+            "2022-2023": {
+                "France": 31
+            },
+            "2021-2022": {
+                "Argentina": 1,
+                "Bolivia": 1,
+                "France": 24
+            },
+            "2020-2021": {
+                "Argentina": 1,
+                "France": 32
+            }
+        };
+
+        // MAGE Data
+        const mageData = {
+            "2024-2025": {
+                "France": 9
+            },
+            "2023-2024": {
+                "France": 3,
+                "Spain": 1
+            },
+            "2022-2023": {
+                "France": 8,
+                "Moldova": 1
+            },
+            "2021-2022": {
+                "France": 7
+            },
+            "2020-2021": {
+                "France": 7
+            }
+        };
+
+        // B2IPME Data
+        const b2ipmeData = {
+            "2024-2025": {},
+            "2023-2024": {},
+            "2022-2023": {
+                "Algeria": 1,
+                "France": 15,
+                "Morocco": 1
+            },
+            "2021-2022": {
+                "France": 10
+            },
+            "2020-2021": {}
+        };
+
+        // DASEE Data
+        const daseeData = {
+            "2024-2025": {},
+            "2023-2024": {
+                "Pakistan": 1
+            },
+            "2022-2023": {
+                "Brazil": 1,
+                "Kazakhstan": 1,
+                "Netherlands": 1,
+                "Pakistan": 1,
+                "Switzerland": 1
+            },
+            "2021-2022": {
+                "Afghanistan": 2,
+                "Cambodia": 1,
+                "Ghana": 2,
+                "Lebanon": 1,
+                "Mexico": 1,
+                "Nigeria": 1,
+                "Spain": 1
+            },
+            "2020-2021": {
+                "Azerbaijan": 1,
+                "Bangladesh": 1,
+                "Belarus": 1,
+                "France": 1,
+                "India": 1,
+                "Iran": 3,
+                "Nigeria": 2,
+                "Pakistan": 1
+            }
+        };
+
+        // Dycob Data
+        const dycobData = {
+            "2024-2025": {},
+            "2023-2024": {},
+            "2022-2023": {
+                "France": 16
+            },
+            "2021-2022": {},
+            "2020-2021": {}
+        };
+
+        // MP2 Data
+        const mp2Data = {
+            "2024-2025": {
+                "South Africa": 1,
+                "Armenia": 1,
+                "Bangladesh": 1,
+                "Brazil": 1,
+                "China": 1,
+                "France": 8,
+                "Greece": 2,
+                "India": 2,
+                "Lebanon": 2,
+                "Nepal": 2,
+                "Pakistan": 5,
+                "Serbia": 2,
+                "Switzerland": 1,
+                "Togo": 1,
+                "Vietnam": 4
+            },
+            "2023-2024": {
+                "Bangladesh": 2,
+                "Bolivia": 1,
+                "France": 2,
+                "Ghana": 1,
+                "Greece": 2,
+                "Lebanon": 3,
+                "Macedonia": 1,
+                "Nepal": 1,
+                "Pakistan": 2,
+                "Philippines": 1,
+                "Serbia": 1,
+                "South Africa": 2,
+                "Spain": 1,
+                "Vietnam": 1
+            },
+            "2022-2023": {
+                "Armenia": 1,
+                "Bangladesh": 2,
+                "Colombia": 2,
+                "France": 13,
+                "Ghana": 1,
+                "India": 4,
+                "Italy": 3,
+                "Lebanon": 3,
+                "Montenegro": 2,
+                "Nigeria": 1,
+                "Philippines": 1,
+                "South Africa": 1,
+                "Spain": 2,
+                "Turkey": 1,
+                "Vietnam": 1
+            },
+            "2021-2022": {},
+            "2020-2021": {}
+        };
+
+        // P2FOOD Data
+        const p2foodData = {
+            "2024-2025": {
+                "France": 7,
+                "Ghana": 1,
+                "Greece": 1,
+                "Mexico": 1,
+                "Moldova": 1,
+                "Poland": 1,
+                "Syria": 1
+            },
+            "2023-2024": {
+                "Brazil": 1,
+                "France": 10,
+                "Italy": 1,
+                "Spain": 1,
+                "United States of America": 1,
+                "Zimbabwe": 1
+            },
+            "2022-2023": {
+                "Bangladesh": 1,
+                "Belarus": 1,
+                "Brazil": 1,
+                "Ecuador": 1,
+                "France": 11,
+                "Ghana": 1,
+                "Iran": 1,
+                "Jordan": 1,
+                "Lebanon": 4,
+                "Mexico": 1,
+                "South Africa": 1,
+                "Spain": 1,
+                "Tunisia": 1,
+                "Vietnam": 2
+            },
+            "2021-2022": {
+                "Belarus": 1,
+                "Brazil": 1,
+                "Ecuador": 1,
+                "France": 7,
+                "India": 1,
+                "Lebanon": 2,
+                "Mexico": 1,
+                "Spain": 1,
+                "Vietnam": 1
+            },
+            "2020-2021": {
+                "Belgium": 1,
+                "France": 4,
+                "Greece": 1,
+                "Italy": 1,
+                "Turkey": 1,
+                "United States of America": 1
+            }
+        };
+
+        // SP2G Data
+        const sp2gData = {
+            "2024-2025": {
+                "France": 16,
+                "Morocco": 1
+            },
+            "2023-2024": {
+                "France": 8,
+                "Gabon": 1,
+                "Mexico": 1,
+                "Tunisia": 1
+            },
+            "2022-2023": {
+                "France": 11
+            },
+            "2021-2022": {
+                "France": 11
+            },
+            "2020-2021": {
+                "France": 8
+            }
+        };
+
+        // QUEST Data
+        const questData = {
+            "2024-2025": {
+                "France": 31,
+                "Morocco": 1,
+                "Mexico": 1
+            },
+            "2023-2024": {
+                "France": 35,
+                "Morocco": 1
+            },
+            "2022-2023": {
+                "Algeria": 1,
+                "Colombia": 1,
+                "Côte d'Ivoire": 1,
+                "France": 29,
+                "Haiti": 1,
+                "Morocco": 1
+            },
+            "2021-2022": {
+                "Algeria": 4,
+                "Colombia": 1,
+                "Côte d'Ivoire": 3,
+                "France": 25,
+                "Haiti": 1,
+                "Morocco": 2,
+                "Senegal": 2
+            },
+            "2020-2021": {
+                "Algeria": 7,
+                "Côte d'Ivoire": 3,
+                "France": 19,
+                "Guinea": 1,
+                "Morocco": 3,
+                "Senegal": 2
+            }
+        };
+
+        // Combine all program data
+        const allProgramData = {
+            "AGATE": agateData,
+            "ASA": asaData,
+            "BDEEM": bdeemData,
+            "Cclimat": cclimatData,
+            "EMME": emmeData,
+            "FORTHEM": forthemData,
+            "3G": threeGData,
+            "GDE": gdeData,
+            "MAGE": mageData,
+            "B2IPME": b2ipmeData,
+            "DASEE": daseeData,
+            "Dycob": dycobData,
+            "MP2": mp2Data,
+            "P2FOOD": p2foodData,
+            "SEME": semeData,
+            "SP2G": sp2gData,
+            "QUEST": questData
+        };
+
+        // Convert counts to individual student entries
+        programs.forEach(program => {
+            years.forEach(year => {
+                const data = allProgramData[program][year];
+                for (const country in data) {
+                    const count = data[country];
+                    for (let i = 0; i < count; i++) {
+                        rawStudentData.push({
+                            country,
+                            program,
+                            year,
+                            latitude: countryCoords[country][0],
+                            longitude: countryCoords[country][1]
+                        });
+                    }
+                }
+            });
+        });
+
+        // Initialize the map with minZoom and maxBounds
+        const map = L.map('map', { minZoom: 2 }).setView([20.0, 0.0], 2);
+        const southWest = L.latLng(-90, -180),
+              northEast = L.latLng(90, 180);
+        const bounds = L.latLngBounds(southWest, northEast);
+        map.setMaxBounds(bounds);
+        map.on('drag', function() {
+            map.panInsideBounds(bounds, { animate: false });
+        });
+
+        // Add CartoDB Positron tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, © <a href="https://carto.com/attributions">CARTO</a>'
+        }).addTo(map);
+
+        // Layer group for individual markers
+        const markers = L.layerGroup().addTo(map);
+
+        // View state
+        let isMapView = true;
+
+        // Mobility scholarship states
+        let isMobilityScholarshipActive = false;
+        let isOutgoingMobilityActive = false;
+        let isErasmusMobilityActive = false;
+
+        const mobilityData = {
+            "2023-2024": {
+                "DASEE": { "Pakistan": 1 },
+                "MAGE": { "Brazil": 1 }
+            },
+            "2024-2025": {
+                "3G": { "France": 1 },
+                "AGATE": { "Brazil": 1 },
+                "ASA": { "France": 2 },
+                "BDEEM": { "France": 1, "Ghana": 1, "India": 1, "Madagascar": 1, "Nigeria": 1, "Pakistan": 1, "Russia": 2 },
+                "EMME": { "Canada": 1, "Ghana": 1, "Mauritius": 1, "Uganda": 1, "United States of America": 1 },
+                "FORTHEM": { "Iran": 1 },
+                "MP2": { "Armenia": 1, "France": 1, "Greece": 1, "Lebanon": 1, "Pakistan": 2 },
+                "P2FOOD": { "Ghana": 1, "Greece": 1, "Moldova": 1, "Poland": 1, "Syria": 1 },
+                "SEME": { "France": 2 }
+            }
+        };
+
+        // Outgoing mobility data
+        const outgoingMobilityData = {
+            "2022-2023": {
+                "Dycob": { "Gabon": 1 },
+                "MAGE": { "Switzerland": 1 }
+            },
+            "2023-2024": {
+                "EMME": {
+                    "Spain": 2,
+                    "Canada": 1,
+                    "Mauritius": 1,
+                    "Switzerland": 1,
+                    "Norway": 2
+                },
+                "MP2": {
+                    "Germany": 2,
+                    "United Kingdom": 2,
+                    "Belgium": 2,
+                    "Hungary": 4,
+                    "Italy": 5,
+                    "Sweden": 1
+                },
+                "P2FOOD": {
+                    "Luxembourg": 1,
+                    "Netherlands": 1,
+                    "United Kingdom": 1
+                }
+            },
+            "2024-2025": {
+                "B2IPME": { "Italy": 1 },
+                "BDEEM": { "Luxembourg": 1 },
+                "Dycob": { "Gabon": 1 },
+                "EMME": {
+                    "Canada": 1,
+                    "Italy": 2,
+                    "United Kingdom": 1,
+                    "South Africa": 1,
+                    "Austria": 1,
+                    "Spain": 1,
+                    "Australia": 1,
+                    "Mexico": 1,
+                    "Seychelles": 1
+                },
+                "FORTHEM": { "Germany": 4 },
+                "GAP": { "United States of America": 1 },
+                "MAGE": { "Switzerland": 1 },
+                "MP2": {
+                    "Germany": 3,
+                    "Belgium": 8,
+                    "Hungary": 1,
+                    "Italy": 5
+                },
+                "P2FOOD": {
+                    "South Korea": 1,
+                    "Norway": 1
+                },
+                "QUEST": { "Canada": 1 },
+                "3G": { "United States of America": 1 }
+            }
+        };
+
+        // Outgoing Erasmus+ mobility data
+        const outgoingMobilityErasmusData = {
+            "2021-2022": {
+                "BDEEM": {
+                    "Austria": 1,
+                    "Belgium": 1,
+                    "Cyprus": 1,
+                    "Germany": 1,
+                    "Luxembourg": 2
+                },
+                "BEWM": {
+                    "Austria": 1,
+                    "Czech Republic": 1,
+                    "Denmark": 1,
+                    "Germany": 3,
+                    "Italy": 1,
+                    "Norway": 1,
+                    "Portugal": 1,
+                    "Spain": 3,
+                    "United Kingdom": 1
+                },
+                "DASEE": {
+                    "Spain": 1
+                },
+                "EMME": {
+                    "Germany": 1,
+                    "Switzerland": 1,
+                    "Netherlands": 1
+                },
+                "MP2": {
+                    "Belgium": 2,
+                    "Croatia": 1,
+                    "Germany": 2,
+                    "Hungary": 4,
+                    "Italy": 4,
+                    "Spain": 2,
+                    "Sweden": 1
+                },
+                "P2FOOD": {
+                    "Greece": 2,
+                    "Italy": 2,
+                    "Norway": 1,
+                    "Switzerland": 1,
+                    "Netherlands": 1
+                }
+            },
+            "2022-2023": {
+                "BDEEM": {
+                    "Germany": 1,
+                    "Hungary": 1,
+                    "Luxembourg": 2
+                },
+                "BEWM": {
+                    "Austria": 1,
+                    "Canada": 1,
+                    "Gabon": 1,
+                    "Germany": 2,
+                    "Portugal": 1,
+                    "Spain": 2,
+                    "Switzerland": 1,
+                    "Netherlands": 1
+                },
+                "DASEE": {
+                    "Italy": 1
+                },
+                "EMME": {
+                    "Croatia": 1,
+                    "Mauritius": 1,
+                    "Norway": 1,
+                    "Spain": 2,
+                    "Sweden": 2,
+                    "Switzerland": 1
+                },
+                "MP2": {
+                    "Belgium": 3,
+                    "Czech Republic": 1,
+                    "Denmark": 2,
+                    "Germany": 3,
+                    "Hungary": 3,
+                    "Italy": 1,
+                    "Sweden": 2,
+                    "United Kingdom": 1
+                },
+                "P2FOOD": {
+                    "Austria": 1,
+                    "Italy": 1,
+                    "Poland": 1,
+                    "Sweden": 3,
+                    "Netherlands": 3
+                }
+            },
+            "2023-2024": {
+                "BDEEM": {
+                    "Singapore": 1
+                },
+                "EMME": {
+                    "Canada": 1,
+                    "Finland": 1,
+                    "Mauritius": 1,
+                    "Norway": 2,
+                    "Spain": 3,
+                    "Switzerland": 1
+                },
+                "MP2": {
+                    "Belgium": 2,
+                    "Germany": 2,
+                    "Hungary": 4,
+                    "Italy": 5,
+                    "Sweden": 2,
+                    "United Kingdom": 1
+                },
+                "P2FOOD": {
+                    "Luxembourg": 1,
+                    "Netherlands": 1
+                }
+            },
+            "2024-2025": {
+                "BDEEM": {
+                    "Italy": 2,
+                    "Luxembourg": 2
+                },
+                "EMME": {
+                    "Austria": 1,
+                    "Norway": 1,
+                    "Portugal": 1,
+                    "Spain": 1
+                }
+            }
+        };
+
+        // Function to aggregate student data based on filters
+        function aggregateStudentData(programFilter, yearFilter, applyMobilityFilter, applyOutgoingMobilityFilter, applyErasmusMobilityFilter, erasmusYearFilter, erasmusMasterFilter) {
+            let studentList = [];
+
+            if (applyErasmusMobilityFilter) {
+                for (const year in outgoingMobilityErasmusData) {
+                    const yearMatch = erasmusYearFilter === 'all' || year === erasmusYearFilter;
+                    if (!yearMatch) continue;
+                    for (const program in outgoingMobilityErasmusData[year]) {
+                        const programMatch = erasmusMasterFilter === 'all' || program === erasmusMasterFilter;
+                        if (!programMatch) continue;
+                        for (const country in outgoingMobilityErasmusData[year][program]) {
+                            const count = outgoingMobilityErasmusData[year][program][country];
+                            for (let i = 0; i < count; i++) {
+                                studentList.push({
+                                    country,
+                                    program,
+                                    year,
+                                    latitude: countryCoords[country][0],
+                                    longitude: countryCoords[country][1]
+                                });
+                            }
+                        }
+                    }
+                }
+            } else if (applyOutgoingMobilityFilter) {
+                for (const year in outgoingMobilityData) {
+                    const yearMatch = yearFilter === 'all' || year === yearFilter;
+                    if (!yearMatch) continue;
+                    for (const program in outgoingMobilityData[year]) {
+                        const programMatch = programFilter === 'all' || program === programFilter;
+                        if (!programMatch) continue;
+                        for (const country in outgoingMobilityData[year][program]) {
+                            const count = outgoingMobilityData[year][program][country];
+                            for (let i = 0; i < count; i++) {
+                                studentList.push({
+                                    country,
+                                    program,
+                                    year,
+                                    latitude: countryCoords[country][0],
+                                    longitude: countryCoords[country][1]
+                                });
+                            }
+                        }
+                    }
+                }
+            } else if (applyMobilityFilter) {
+                for (const year in mobilityData) {
+                    const yearMatch = yearFilter === 'all' || year === yearFilter;
+                    if (!yearMatch) continue;
+                    for (const program in mobilityData[year]) {
+                        const programMatch = programFilter === 'all' || program === programFilter;
+                        if (!programMatch) continue;
+                        for (const country in mobilityData[year][program]) {
+                            const count = mobilityData[year][program][country];
+                            for (let i = 0; i < count; i++) {
+                                studentList.push({
+                                    country,
+                                    program,
+                                    year,
+                                    latitude: countryCoords[country][0],
+                                    longitude: countryCoords[country][1]
+                                });
+                            }
+                        }
+                    }
+                }
+            } else {
+                studentList = rawStudentData.filter(student => {
+                    const programMatch = programFilter === 'all' || student.program === programFilter;
+                    const yearMatch = yearFilter === 'all' || student.year === yearFilter;
+                    return programMatch && yearMatch;
+                });
+            }
+
+            // Aggregate by country
+            const countryMap = new Map();
+            studentList.forEach(student => {
+                const country = student.country;
+                if (!countryMap.has(country)) {
+                    countryMap.set(country, {
+                        country,
+                        studentCount: 0,
+                        programs: new Set(),
+                        years: new Set(),
+                        latitude: student.latitude,
+                        longitude: student.longitude
+                    });
+                }
+                const countryData = countryMap.get(country);
+                countryData.studentCount += 1;
+                countryData.programs.add(student.program);
+                countryData.years.add(student.year);
+            });
+
+            // Convert to array and sort by country
+            const aggregatedData = Array.from(countryMap.values())
+                .map(data => ({
+                    country: data.country,
+                    studentCount: data.studentCount,
+                    programs: Array.from(data.programs).sort(),
+                    years: Array.from(data.years).sort(),
+                    latitude: data.latitude,
+                    longitude: data.longitude
+                }))
+                .sort((a, b) => a.country.localeCompare(b.country));
+
+            return aggregatedData;
+        }
+
+        // Function to add student markers with logarithmic scaling
+        function addStudentMarkers(studentList) {
+            markers.clearLayers(); // Clear existing markers
+            studentList.forEach(student => {
+                if (!student.latitude || !student.longitude) {
+                    console.warn(`No coordinates for country: ${student.country}`);
+                    return;
+                }
+                const baseRadius = 5;
+                const maxRadius = 30;
+                const logScale = Math.log10(Math.max(student.studentCount, 1)) * 5;
+                const radius = Math.min(maxRadius, Math.max(baseRadius, baseRadius + logScale));
+
+                const marker = L.circleMarker([student.latitude, student.longitude], {
+                    radius: radius,
+                    fillColor: '#2b6cb0',
+                    color: '#ffffff',
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+                const popupContent = `
+                    <div class="popup-content">
+                        <strong>${student.country}</strong><br>
+                        Students: ${student.studentCount}<br>
+                        Programs: ${student.programs.join(', ')}<br>
+                        Years: ${student.years.join(', ')}
+                    </div>
+                `;
+                marker.bindPopup(popupContent);
+                marker.on('click', () => {
+                    map.setView([student.latitude, student.longitude], 5);
+                });
+                markers.addLayer(marker);
+            });
+            map.addLayer(markers);
+            map.invalidateSize();
+        }
+
+        // Function to populate student table
+        function populateStudentTable(studentList) {
+            const studentTableBody = document.getElementById('studentTableBody');
+            studentTableBody.innerHTML = '';
+            studentList.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.country}</td>
+                    <td>${student.studentCount}</td>
+                    <td>${student.programs.join(', ')}</td>
+                    <td>${student.years.join(', ')}</td>
+                `;
+                studentTableBody.appendChild(row);
+            });
+        }
+
+        // Toggle between map and table view
+        const toggleViewBtn = document.getElementById('toggleViewBtn');
+        const mapContainer = document.getElementById('mapContainer');
+        const tableContainer = document.getElementById('tableContainer');
+
+        toggleViewBtn.addEventListener('click', () => {
+            isMapView = !isMapView;
+            if (isMapView) {
+                mapContainer.style.display = 'block';
+                tableContainer.style.display = 'none';
+                toggleViewBtn.textContent = 'Show Table';
+                map.invalidateSize();
+            } else {
+                mapContainer.style.display = 'none';
+                tableContainer.style.display = 'block';
+                toggleViewBtn.textContent = 'Show Map';
+            }
+        });
+
+        // Filter functionality
+        function updateMapAndTable() {
+            const program = document.getElementById('studentProgramFilter').value;
+            const year = document.getElementById('studentYearFilter').value;
+            const erasmusYear = isErasmusMobilityActive ? document.getElementById('erasmusYearFilter').value : 'all';
+            const erasmusMaster = isErasmusMobilityActive ? document.getElementById('erasmusMasterFilter').value : 'all';
+            const applyMobilityFilter = isMobilityScholarshipActive;
+            const applyOutgoingMobilityFilter = isOutgoingMobilityActive;
+            const applyErasmusMobilityFilter = isErasmusMobilityActive;
+
+            if ([applyMobilityFilter, applyOutgoingMobilityFilter, applyErasmusMobilityFilter].filter(Boolean).length > 1) {
+                alert("Please select only one mobility filter at a time.");
+                return;
+            }
+
+            const aggregatedData = aggregateStudentData(
+                program,
+                year,
+                applyMobilityFilter,
+                applyOutgoingMobilityFilter,
+                applyErasmusMobilityFilter,
+                erasmusYear,
+                erasmusMaster
+            );
+
+            addStudentMarkers(aggregatedData);
+            populateStudentTable(aggregatedData);
+            if (isMapView) {
+                map.invalidateSize();
+            }
+        }
+
+        // Add event listeners for filters
+        document.getElementById('studentProgramFilter').addEventListener('change', updateMapAndTable);
+        document.getElementById('studentYearFilter').addEventListener('change', updateMapAndTable);
+        document.getElementById('erasmusYearFilter').addEventListener('change', updateMapAndTable);
+        document.getElementById('erasmusMasterFilter').addEventListener('change', updateMapAndTable);
+
+        // Add event listener for mobility scholarship toggle
+        document.getElementById('mobilityScholarshipToggle').addEventListener('change', (e) => {
+            isMobilityScholarshipActive = e.target.checked;
+            if (isMobilityScholarshipActive) {
+                isOutgoingMobilityActive = false;
+                isErasmusMobilityActive = false;
+                document.getElementById('outgoingMobilityToggle').checked = false;
+                document.getElementById('erasmusMobilityToggle').checked = false;
+                document.getElementById('erasmusFilters').classList.remove('show');
+            }
+            updateMapAndTable();
+        });
+
+        // Add event listener for outgoing mobility toggle
+        document.getElementById('outgoingMobilityToggle').addEventListener('change', (e) => {
+            isOutgoingMobilityActive = e.target.checked;
+            if (isOutgoingMobilityActive) {
+                isMobilityScholarshipActive = false;
+                isErasmusMobilityActive = false;
+                document.getElementById('mobilityScholarshipToggle').checked = false;
+                document.getElementById('erasmusMobilityToggle').checked = false;
+                document.getElementById('erasmusFilters').classList.remove('show');
+            }
+            updateMapAndTable();
+        });
+
+        // Add event listener for Erasmus+ mobility toggle
+        document.getElementById('erasmusMobilityToggle').addEventListener('change', (e) => {
+            isErasmusMobilityActive = e.target.checked;
+            if (isErasmusMobilityActive) {
+                isMobilityScholarshipActive = false;
+                isOutgoingMobilityActive = false;
+                document.getElementById('mobilityScholarshipToggle').checked = false;
+                document.getElementById('outgoingMobilityToggle').checked = false;
+                document.getElementById('erasmusFilters').classList.add('show');
+            } else {
+                document.getElementById('erasmusFilters').classList.remove('show');
+            }
+            updateMapAndTable();
+        });
+
+        // Initial setup
+        updateMapAndTable();
+
+        // Export to PDF
+        const { jsPDF } = window.jspdf;
+        document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+            const doc = new jsPDF({
+                orientation: 'landscape',
+                unit: 'in',
+                format: 'a4'
+            });
+
+            const tableElement = document.getElementById('studentsTable');
+            const canvas = await html2canvas(tableElement, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = 11.69;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+            doc.save('students_table.pdf');
+        });
+    </script>
+</body>
+</html>
